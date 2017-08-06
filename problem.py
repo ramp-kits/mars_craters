@@ -3,24 +3,28 @@ import pandas as pd
 import rampwf as rw
 from sklearn.model_selection import StratifiedShuffleSplit
 
+import local_workflow
+import local_scores
+
 problem_title = 'Mars craters detection and classification'
-_target_column_name = 'class'
-_prediction_label_names = [0, 1, 2, 3]
-# A type (class) which will be used to create wrapper objects for y_pred
-Predictions = rw.prediction_types.make_multiclass(
-    label_names=_prediction_label_names)
+
+# _target_column_name = 'class'
+# _prediction_label_names = [0, 1, 2, 3]
+# # A type (class) which will be used to create wrapper objects for y_pred
+# Predictions = rw.prediction_types.make_multiclass(
+#     label_names=_prediction_label_names)
 # An object implementing the workflow
-workflow = rw.workflows.ImageClassifier(
+workflow = local_workflow.ObjectDetector(
     test_batch_size=16,
     chunk_size=256,
     n_jobs=8,
-    img_file_extension='png',
-    n_classes=len(_prediction_label_names),
+    # img_file_extension='png',
+    # n_classes=len(_prediction_label_names),
 )
 
 score_types = [
-    rw.score_types.Accuracy(name='acc'),
-    rw.score_types.NegativeLogLikelihood(name='nll'),
+    local_scores.Accuracy(name='acc'),
+    local_scores.NegativeLogLikelihood(name='nll'),
 ]
 
 
