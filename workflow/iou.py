@@ -6,6 +6,22 @@ __all__ = ["cc_iou"]
 
 
 def cc_iou(circle1, circle2):
+    """
+    Intersection over Union (IoU) between two circles
+
+    Parameters
+    ----------
+    circle1 : tuple of floats
+        first circle parameters (x_pos, y_pos, radius)
+    circle2 : tuple of floats
+        second circle parameters (x_pos, y_pos, radius)
+
+    Returns
+    -------
+    float
+        ratio between area of intersection and area of union
+
+    """
     x1, y1, r1 = circle1
     x2, y2, r2 = circle2
 
@@ -19,13 +35,25 @@ def cc_iou(circle1, circle2):
 
 def cc_intersection(dist, rad1, rad2):
     """
-    Compute the area of intersection between two circles
+    Area of intersection between two circles
 
     Parameters
     ----------
     dist : positive float
-        distance between circles
-    rad1 : float
+        distance between circle centers
+    rad1 : positive float
+        radius of first circle
+    rad2 : positive float
+        radius of second circle
+
+    Returns
+    -------
+    intersection_area : positive float
+        area of intersection between circles
+
+    References
+    ----------
+    http://mathworld.wolfram.com/Circle-CircleIntersection.html
 
     """
     if dist < 0:
