@@ -1,15 +1,21 @@
-import iou
 import math
 import pytest
+
+from .. import iou
 
 
 def test_cc_iou():
     circle1 = (0, 0, 1)
     circle2 = (0, 4, 1)
     circle3 = (1, 1, 2)
+    circle1_2 = (0, 0, 2)
     assert iou.cc_iou(circle1, circle1) - 1 < 1e-6
     assert iou.cc_iou(circle1, circle2) < 1e-6
+    assert iou.cc_iou(circle2, circle1) < 1e-6
     assert iou.cc_iou(circle1, circle3) - math.pi < 1e-6
+    assert iou.cc_iou(circle3, circle1) - math.pi < 1e-6
+    assert iou.cc_iou(circle1_2, circle1) == 0.25
+    assert iou.cc_iou(circle1, circle1_2) == 0.25
 
 
 def test_cc_intersection():

@@ -67,7 +67,7 @@ def main():
             continue
         download_file(url)
         absolute_ids, local_ids = get_ids(df_train, df_test, index=filename)
-        save_to_png(filename, absolute_ids, local_ids, img_dir)
+        save_quadrangle_to_png(filename, absolute_ids, local_ids, img_dir)
         os.remove(filename)
 
     print('Images saved in {}/<id>.png ...'.format(img_dir))

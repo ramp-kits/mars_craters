@@ -62,7 +62,7 @@ def cc_intersection(dist, rad1, rad2):
         raise ValueError("Circle radius must be positive")
 
     if dist == 0:
-        return max(rad1, rad2) ** 2 * math.pi
+        return min(rad1, rad2) ** 2 * math.pi
 
     if dist > rad1 + rad2 or rad1 == 0 or rad2 == 0:
         return 0

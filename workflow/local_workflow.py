@@ -204,8 +204,8 @@ class BatchGeneratorBuilder(object):
                 n_jobs=self.n_jobs, img_file_extension=self.img_file_extension)
             for X, y in it:
                 # 1) Preprocessing of X and y
-                # X = Parallel(n_jobs=self.n_jobs, backend='threading')(delayed(
-                #     self.transform_img)(x) for x in X)
+                # X = Parallel(n_jobs=self.n_jobs, backend='threading')(
+                    # delayed(self.transform_img)(x) for x in X)
                 X = np.array([self.transform_img(x) for x in X])
                 # # X is a list of numpy arrrays at this point, convert it to a
                 # single numpy array.
