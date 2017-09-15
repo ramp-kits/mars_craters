@@ -67,12 +67,12 @@ def score_image(y_true, y_pred):
     return score
 
 
-class MaskScore(BaseScoreType):
+class MaskDetectionScore(BaseScoreType):
     is_lower_the_better = True
     minimum = 0.0
     maximum = np.inf
 
-    def __init__(self, name='accuracy', precision=2):
+    def __init__(self, name='MaskDetectionScore', precision=2):
         self.name = name
         self.precision = precision
 
