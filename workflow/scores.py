@@ -4,6 +4,7 @@ import itertools
 import numpy as np
 
 from .iou import cc_iou as iou
+from .circles import circle_map
 
 
 def score_craters_on_patch(y_true, y_pred):
@@ -28,6 +29,38 @@ def score_craters_on_patch(y_true, y_pred):
     ospa_score = ospa(y_true, y_pred)
 
     score = 1 - ospa_score
+
+    return score
+
+
+def score_image(y_true, y_pred):
+    """
+    Score based on a matching by reprojection of craters on mask-map
+
+    True craters are projected positively, predicted craters negatively,
+    so they can cancel out. Then the sum of the absolute value of the
+    residual map is taken.
+
+    The best score value for a perfect match is 0.
+    The worst score value for a given patch is the sum of all crater
+    instances in both `y_true` and `y_pred`.
+
+    Parameters
+    ----------
+    y_true : list of tuples (x, y, radius)
+        List of coordinates and radius of actual craters in a patch
+    y_pred : list of tuples (x, y, radius)
+        List of coordinates and radius of craters predicted in the patch
+
+    Returns
+    -------
+    float : score for a given patch, the higher the better
+
+    """
+    image = np.abs(circle_map(y_true, y_pred))
+
+    # Sum all the pixels
+    score = image.sum()
 
     return score
 
