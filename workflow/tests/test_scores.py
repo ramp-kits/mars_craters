@@ -2,12 +2,27 @@ from __future__ import absolute_import
 
 import numpy as np
 
-from ..scores import ospa, score_craters_on_patch
+from ..scores import ospa, score_craters_on_patch, score_image
 
 x = [(1, 1, 1)]
 x2 = [(1, 1, 2)]
 y = [(1, 3, 1)]
 z = x + y
+
+
+def test_score_image():
+    # Perfect match
+    assert score_image(x, x) == 0
+    # No match
+    assert score_image(x, y) == 2
+    assert score_image(x, x2) > 0
+    # 1 match, 1 miss
+    assert score_image(x, z) == 1
+    # 1 empty, 1 not
+    assert score_image(x, []) == 1
+    assert score_image([], x) == 1
+    # 2 empty arrays
+    assert score_image([], []) == 0
 
 
 def test_score_craters_on_patch():
