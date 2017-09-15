@@ -23,7 +23,7 @@ def _ellipse_in_shape(shape, center, radii, rotation=0.):
     rows : iterable of ints
         Row coordinates representing values within the ellipse.
     cols : iterable of ints
-        Corresponding column coordinates representing values within the ellipse.
+        Corresponding column coordinates representing values within the ellipse
     """
     r_lim, c_lim = np.ogrid[0:float(shape[0]), 0:float(shape[1])]
     r_org, c_org = center
@@ -32,7 +32,7 @@ def _ellipse_in_shape(shape, center, radii, rotation=0.):
     sin_alpha, cos_alpha = np.sin(rotation), np.cos(rotation)
     r, c = (r_lim - r_org), (c_lim - c_org)
     distances = ((r * cos_alpha + c * sin_alpha) / r_rad) ** 2 \
-                + ((r * sin_alpha - c * cos_alpha) / c_rad) ** 2
+        + ((r * sin_alpha - c * cos_alpha) / c_rad) ** 2
     return np.nonzero(distances < 1)
 
 
@@ -45,8 +45,9 @@ def ellipse(r, c, r_radius, c_radius, shape=None, rotation=0.):
     r_radius, c_radius : double
         Minor and major semi-axes. ``(r/r_radius)**2 + (c/c_radius)**2 = 1``.
     shape : tuple, optional
-        Image shape which is used to determine the maximum extent of output pixel
-        coordinates. This is useful for ellipses which exceed the image size.
+        Image shape which is used to determine the maximum extent of output
+        pixel coordinates. This is useful for ellipses which exceed the
+        image size.
         By default the full extent of the ellipse are used.
     rotation : float, optional (default 0.)
         Set the ellipse rotation (rotation) in range (-PI, PI)
@@ -101,9 +102,9 @@ def ellipse(r, c, r_radius, c_radius, shape=None, rotation=0.):
 
     # compute rotated radii by given rotation
     r_radius_rot = abs(r_radius * np.cos(rotation)) \
-                   + c_radius * np.sin(rotation)
+        + c_radius * np.sin(rotation)
     c_radius_rot = r_radius * np.sin(rotation) \
-                   + abs(c_radius * np.cos(rotation))
+        + abs(c_radius * np.cos(rotation))
     # The upper_left and lower_right corners of the smallest rectangle
     # containing the ellipse.
     radii_rot = np.array([r_radius_rot, c_radius_rot])
