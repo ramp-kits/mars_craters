@@ -3,6 +3,8 @@ from __future__ import division
 import itertools
 import numpy as np
 
+from rampwf.score_types.base import BaseScoreType
+
 from .iou import cc_iou as iou
 from .circles import circle_map
 
@@ -63,6 +65,21 @@ def score_image(y_true, y_pred):
     score = image.sum()
 
     return score
+
+
+class MaskScore(BaseScoreType):
+    is_lower_the_better = True
+    minimum = 0.0
+    maximum = np.inf
+
+    def __init__(self, name='accuracy', precision=2):
+        self.name = name
+        self.precision = precision
+
+    def __call__(self, y_true, y_pred):
+        scores = [score_image(t, p) for t, p in zip(y_true, y_pred)]
+        true_craters = [len(t) for t in y_true]
+        return np.sum(scores) / np.sum(true_craters)
 
 
 def score_iou(y_true, y_pred):
