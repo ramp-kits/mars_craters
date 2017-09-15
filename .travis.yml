@@ -14,10 +14,12 @@ install:
     - conda install --yes --quiet numpy scipy matplotlib scikit-learn pandas
     - conda install --yes --quiet pytest pytest-cov
     - pip install -q flake8
+    - pushd .
+    - cd ../..
     - git clone https://github.com/paris-saclay-cds/ramp-workflow.git
     - cd ramp-workflow
     - python setup.py install
-    - cd ..
+    - popd
 script:
     - flake8 *.py workflow/*.py submissions/*/*.py
     - pytest --cov workflow
