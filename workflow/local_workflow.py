@@ -1,25 +1,19 @@
 from __future__ import division
-import os
+
 import imp
 import numpy as np
-from skimage.io import imread
-from joblib import delayed
-from joblib import Parallel
 
 
 class ObjectDetector(object):
     def __init__(self, test_batch_size, chunk_size, n_jobs,
-                 img_file_extension, n_classes,
                  workflow_element_names=[
                      'image_preprocessor', 'batch_classifier']):
         self.element_names = workflow_element_names
         self.test_batch_size = test_batch_size
         self.chunk_size = chunk_size
         self.n_jobs = n_jobs
-        self.n_classes = n_classes
-        self.img_file_extension = img_file_extension
 
-    def train_submission(self, module_path, folder_X_array, y_array,
+    def train_submission(self, module_path, X, y,
                          train_is=None):
         """Train a batch image classifier.
 
@@ -36,7 +30,6 @@ class ObjectDetector(object):
         train_is : vector of int
            indices from X_array to train on
         """
-        folder, X_array = folder_X_array
         if train_is is None:
             train_is = slice(None, None, None)
         submitted_image_preprocessor_file = '{}/{}.py'.format(
@@ -51,13 +44,12 @@ class ObjectDetector(object):
         clf = batch_classifier.BatchClassifier()
 
         gen_builder = BatchGeneratorBuilder(
-            X_array[train_is], y_array[train_is], transform_img, folder=folder,
-            chunk_size=self.chunk_size, n_classes=self.n_classes,
-            n_jobs=self.n_jobs, img_file_extension=self.img_file_extension)
+            X[train_is], y[train_is], transform_img,
+            chunk_size=self.chunk_size, n_jobs=self.n_jobs)
         clf.fit(gen_builder)
         return transform_img, clf
 
-    def test_submission(self, trained_model, folder_X_array):
+    def test_submission(self, trained_model, X):
         """Train a batch image classifier.
 
         trained_model : tuple (function, Classifier)
@@ -68,12 +60,9 @@ class ObjectDetector(object):
              but as said here, it does not represent the data itself,
              only image IDs).
         """
-        folder, X_array = folder_X_array
         transform_img, clf = trained_model
-        it = _chunk_iterator(
-            X_array, folder=folder, chunk_size=self.chunk_size,
-            img_file_extension=self.img_file_extension)
-        y_proba = []
+        it = _chunk_iterator(X, chunk_size=self.chunk_size)
+        y_pred = []
         for X in it:
             for i in range(0, len(X), self.test_batch_size):
                 # 1) Preprocessing
@@ -83,19 +72,20 @@ class ObjectDetector(object):
                 X_batch = [transform_img(x) for x in X_batch]
                 # X is a list of numpy arrrays at this point, convert it to a
                 # single numpy array.
-                try:
-                    X_batch = [x[np.newaxis, :, :, :] for x in X_batch]
-                except IndexError:
-                    # single channel
-                    X_batch = [
-                        x[np.newaxis, np.newaxis, :, :] for x in X_batch]
-                X_batch = np.concatenate(X_batch, axis=0)
+                # try:
+                #     X_batch = [x[np.newaxis, :, :, :] for x in X_batch]
+                # except IndexError:
+                #     # single channel
+                #     X_batch = [
+                #         x[np.newaxis, np.newaxis, :, :] for x in X_batch]
+                # X_batch = np.concatenate(X_batch, axis=0)
 
                 # 2) Prediction
-                y_proba_batch = clf.predict_proba(X_batch)
-                y_proba.append(y_proba_batch)
-        y_proba = np.concatenate(y_proba, axis=0)
-        return y_proba
+                y_pred_batch = clf.predict(X_batch)
+                y_pred.extend(y_pred_batch)
+
+        # y_pred = np.concatenate(y_pred, axis=0)
+        return y_pred
 
 
 class BatchGeneratorBuilder(object):
@@ -142,16 +132,15 @@ class BatchGeneratorBuilder(object):
         the number of jobs used to load images from disk to memory as `chunks`.
     """
 
-    def __init__(self, X_array, y_array, transform_img, folder,
-                 chunk_size, n_classes, n_jobs, img_file_extension):
+    def __init__(self, X_array, y_array, transform_img, chunk_size, n_jobs):
         self.X_array = X_array
         self.y_array = y_array
         self.transform_img = transform_img
-        self.folder = folder
+        # self.folder = folder
         self.chunk_size = chunk_size
-        self.n_classes = n_classes
+        # self.n_classes = n_classes
         self.n_jobs = n_jobs
-        self.img_file_extension = img_file_extension
+        # self.img_file_extension = img_file_extension
         self.nb_examples = len(X_array)
 
     def get_train_valid_generators(self, batch_size=256, valid_ratio=0.1):
@@ -217,15 +206,14 @@ class BatchGeneratorBuilder(object):
                 X = np.concatenate(X, axis=0)
                 X = np.array(X, dtype='float32')
                 # Convert y to onehot representation
-                y = _to_categorical(y, num_classes=self.n_classes)
+                # y = _to_categorical(y, num_classes=self.n_classes)
 
                 # 2) Yielding mini-batches
                 for i in range(0, len(X), batch_size):
                     yield X[i:i + batch_size], y[i:i + batch_size]
 
 
-def _chunk_iterator(X_array, folder, y_array=None, chunk_size=1024, n_jobs=8,
-                    img_file_extension='png'):
+def _chunk_iterator(src, labels=None, chunk_size=1024, n_jobs=8):
     """Generate chunks of images, optionally with their labels.
 
     Parameters
@@ -268,43 +256,21 @@ def _chunk_iterator(X_array, folder, y_array=None, chunk_size=1024, n_jobs=8,
     vary according to examples (hence the fact that X is a list instead of
     numpy array).
     """
-    for i in range(0, len(X_array), chunk_size):
-        X_chunk = X_array[i:i + chunk_size]
-        filenames = [
-            os.path.join(folder, '{}.{}'.format(x, img_file_extension))
-            for x in X_chunk]
-        X = Parallel(n_jobs=n_jobs, backend='threading')(delayed(imread)(
-            filename) for filename in filenames)
-        if y_array is not None:
-            y = y_array[i:i + chunk_size]
+    for i in range(0, src.shape[0], chunk_size):
+        # X_chunk = X_array[i:i + chunk_size]
+        # filenames = [
+        #    os.path.join(folder, '{}.{}'.format(x, img_file_extension))
+        #    for x in X_chunk]
+        # X = Parallel(n_jobs=n_jobs, backend='threading')(delayed(imread)(
+        #    filename) for filename in filenames)
+        X = src[i:i + chunk_size, :, :]
+
+        if labels is not None:
+            # y = y_array[i:i + chunk_size]
+            y = labels[i:i + chunk_size]
             yield X, y
         else:
             yield X
-
-
-def _to_categorical(y, num_classes=None):
-    """Convert a class vector (integers) to binary class matrix.
-
-    Taken from keras:
-    https://github.com/fchollet/keras/blob/master/keras/utils/np_utils.py
-    The reason it was taken from keras is to avoid importing theano which
-    clashes with pytorch.
-
-    E.g. for use with categorical_crossentropy.
-    # Arguments
-        y: class vector to be converted into a matrix
-            (integers from 0 to num_classes).
-        num_classes: total number of classes.
-    # Returns
-        A binary matrix representation of the input.
-    """
-    y = np.array(y, dtype='int').ravel()
-    if not num_classes:
-        num_classes = np.max(y) + 1
-    n = y.shape[0]
-    categorical = np.zeros((n, num_classes))
-    categorical[np.arange(n), y] = 1
-    return categorical
 
 
 def get_nb_minibatches(nb_samples, batch_size):
