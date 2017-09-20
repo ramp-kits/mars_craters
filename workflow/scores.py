@@ -3,6 +3,8 @@ from __future__ import division
 import itertools
 import numpy as np
 
+from rampwf.score_types.base import BaseScoreType
+
 from .iou import cc_iou as iou
 
 
@@ -108,3 +110,18 @@ def ospa(x_arr, y_arr, cut_off=1):
     dist = 1 / n * (distance_score + cardinality_score)
 
     return dist
+
+
+class Ospa(BaseScoreType):
+    is_lower_the_better = False
+    minimum = 0.0
+    maximum = 1.0
+
+    def __init__(self, name='accuracy', precision=2):
+        self.name = name
+        self.precision = precision
+
+    def __call__(self, y_true, y_pred):
+        scores = [score_craters_on_patch(t, p) for t, p in zip(y_true, y_pred)]
+        weights = [len(t) for t in y_true]
+        return np.average(scores, weights=weights)

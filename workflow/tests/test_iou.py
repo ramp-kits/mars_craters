@@ -36,3 +36,7 @@ def test_cc_intersection():
         iou.cc_intersection(-1, 1, 1)
         iou.cc_intersection(1, -1, 1)
         iou.cc_intersection(1, 1, -1)
+
+
+def test_cc_intersection_completely_overlapping():
+    iou.cc_intersection(2, 4, 1) - math.pi < 1e-6
