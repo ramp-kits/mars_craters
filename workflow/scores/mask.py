@@ -7,7 +7,7 @@ from rampwf.score_types.base import BaseScoreType
 from .._circles import circle_map
 
 
-def score_image(y_true, y_pred):
+def mask_detection(y_true, y_pred):
     """
     Score based on a matching by reprojection of craters on mask-map
 
@@ -39,7 +39,7 @@ def score_image(y_true, y_pred):
     return score
 
 
-class MaskDetectionScore(BaseScoreType):
+class MaskDetection(BaseScoreType):
     is_lower_the_better = True
     minimum = 0.0
     maximum = np.inf
@@ -49,6 +49,6 @@ class MaskDetectionScore(BaseScoreType):
         self.precision = precision
 
     def __call__(self, y_true, y_pred):
-        scores = [score_image(t, p) for t, p in zip(y_true, y_pred)]
+        scores = [mask_detection(t, p) for t, p in zip(y_true, y_pred)]
         true_craters = [len(t) for t in y_true]
         return np.sum(scores) / np.sum(true_craters)

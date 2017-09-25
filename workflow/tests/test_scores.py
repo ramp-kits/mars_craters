@@ -6,7 +6,7 @@ import pytest
 
 import numpy as np
 
-from ..scores import (ospa, score_craters_on_patch, score_image,
+from ..scores import (ospa, score_craters_on_patch, mask_detection,
                       precision, recall, mad_radius, mad_center)
 
 x = [(1, 1, 1)]
@@ -15,19 +15,19 @@ y = [(1, 3, 1)]
 z = x + y
 
 
-def test_score_image():
+def test_mask_detection():
     # Perfect match
-    assert score_image(x, x) == 0
+    assert mask_detection(x, x) == 0
     # No match
-    assert score_image(x, y) == 2
-    assert score_image(x, x2) > 0
+    assert mask_detection(x, y) == 2
+    assert mask_detection(x, x2) > 0
     # 1 match, 1 miss
-    assert score_image(x, z) == 1
+    assert mask_detection(x, z) == 1
     # 1 empty, 1 not
-    assert score_image(x, []) == 1
-    assert score_image([], x) == 1
+    assert mask_detection(x, []) == 1
+    assert mask_detection([], x) == 1
     # 2 empty arrays
-    assert score_image([], []) == 0
+    assert mask_detection([], []) == 0
 
 
 def test_score_craters_on_patch():
