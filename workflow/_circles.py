@@ -2,7 +2,7 @@ from __future__ import division
 
 import numpy as np
 
-from .draw import circle as circle_coords
+from ._draw import circle as circle_coords
 
 
 def project_circle(circle, image=None, shape=None,

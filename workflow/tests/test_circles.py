@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ..circles import project_circle, circle_map
+from .._circles import project_circle, circle_map
 
 circle = (1, 1, 1)
 x = [circle]

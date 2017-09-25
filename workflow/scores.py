@@ -6,7 +6,7 @@ import numpy as np
 from rampwf.score_types.base import BaseScoreType
 
 from .iou import cc_iou as iou
-from .circles import circle_map
+from ._circles import circle_map
 
 
 def score_craters_on_patch(y_true, y_pred):
