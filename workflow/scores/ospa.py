@@ -5,7 +5,7 @@ import numpy as np
 
 from rampwf.score_types.base import BaseScoreType
 
-from .iou import cc_iou as iou
+from ..iou import cc_iou as iou
 
 
 def score_craters_on_patch(y_true, y_pred):
@@ -117,7 +117,7 @@ class Ospa(BaseScoreType):
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='accuracy', precision=2):
+    def __init__(self, name='OSPA', precision=2):
         self.name = name
         self.precision = precision
 
