@@ -72,7 +72,7 @@ class MaskDetectionScore(BaseScoreType):
     minimum = 0.0
     maximum = np.inf
 
-    def __init__(self, name='MaskDetectionScore', precision=2):
+    def __init__(self, name='mask_detection', precision=2):
         self.name = name
         self.precision = precision
 
