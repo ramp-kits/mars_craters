@@ -4,7 +4,7 @@ import numpy as np
 
 from rampwf.score_types.base import BaseScoreType
 
-from .._circles import circle_map
+from ._circles import circle_map
 
 
 def mask_detection(y_true, y_pred):
