@@ -34,14 +34,6 @@ def score_craters_on_patch(y_true, y_pred):
     return score
 
 
-def score_iou(y_true, y_pred):
-    pass
-
-
-def score_completeness(y_true, y_pred):
-    pass
-
-
 def ospa(x_arr, y_arr, cut_off=1):
     """
     Optimal Subpattern Assignment (OSPA) metric for IoU score
