@@ -1,25 +1,26 @@
-# import os
+import imp
+
 import numpy as np
 import pandas as pd
 # import rampwf as rw
 
-import workflow.local_workflow as local_workflow
-import workflow.scores as local_scores
+
+local_workflow = imp.load_package('workflow', './workflow')
 
 
 problem_title = 'Mars craters detection and classification'
 
 # A type (class) which will be used to create wrapper objects for y_pred
-from workflow.predictions import Predictions # noqa
+Predictions = local_workflow.predictions.Predictions
 
 # An object implementing the workflow
-workflow = local_workflow.ObjectDetector(
+workflow = local_workflow.workflow.ObjectDetector(
     test_batch_size=16,
     chunk_size=50,
     n_jobs=8)
 
 score_types = [
-    local_scores.Ospa(),
+    local_workflow.scores.Ospa(),
     # local_scores.Accuracy(name='acc'),
     # local_scores.NegativeLogLikelihood(name='nll'),
 ]

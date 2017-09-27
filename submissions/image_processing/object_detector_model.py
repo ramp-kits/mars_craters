@@ -7,15 +7,13 @@ from skimage.transform import hough_circle, hough_circle_peaks
 from skimage.feature import canny
 from skimage.draw import circle_perimeter
 
-# from rampwf.workflows.image_classifier import get_nb_minibatches
 
-
-class CraterDetector:
+class ObjectDetector:
     def __init__(self, sigma=3, threshold=0.4):
         self.sigma = sigma
         self.threshold = threshold
 
-    def fit(self, X, y):
+    def fit(self, gen_builder):
         return self
 
     def _hough_detection(self, image):
@@ -31,13 +29,12 @@ class CraterDetector:
         return edges, peaks
 
     def predict(self, X):
+        return [self._predict_single(img) for img in X]
+
+    def _predict_single(self, X):
         edges, peaks = self._hough_detection(X)
         accum, cx, cy, radii = peaks
         return list(zip(cx, cy, radii))
-
-    # def score(self, X, y):
-    #     y_pred = self.predict(X)
-    #     return score(y, y_pred)
 
     def show_prediction(self, X):
         import matplotlib.pyplot as plt
@@ -60,17 +57,3 @@ class CraterDetector:
         ax[1].imshow(edges, cmap=plt.cm.gray)
         ax[2].imshow(image2, cmap=plt.cm.gray)
         display(fig)
-
-
-class BatchClassifier(object):
-    def __init__(self):
-        self.model = self._build_model()
-
-    def fit(self, gen_builder):
-        return self
-
-    def predict(self, X):
-        return [self.model.predict(img) for img in X]
-
-    def _build_model(self):
-        return CraterDetector()
