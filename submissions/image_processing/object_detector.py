@@ -13,7 +13,7 @@ class ObjectDetector:
         self.sigma = sigma
         self.threshold = threshold
 
-    def fit(self, gen_builder):
+    def fit(self, X, y):
         return self
 
     def _hough_detection(self, image):

@@ -14,10 +14,7 @@ problem_title = 'Mars craters detection and classification'
 Predictions = local_workflow.predictions.Predictions
 
 # An object implementing the workflow
-workflow = local_workflow.workflow.ObjectDetector(
-    test_batch_size=16,
-    chunk_size=50,
-    n_jobs=8)
+workflow = local_workflow.workflow.ObjectDetector()
 
 score_types = [
     local_workflow.scores.Ospa(),
