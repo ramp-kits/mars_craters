@@ -109,11 +109,18 @@ class Ospa(BaseScoreType):
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='OSPA', precision=2):
+    def __init__(self, name='OSPA', precision=2, conf_threshold=0.5):
         self.name = name
         self.precision = precision
+        self.conf_threshold = conf_threshold
 
-    def __call__(self, y_true, y_pred):
-        scores = [score_craters_on_patch(t, p) for t, p in zip(y_true, y_pred)]
+    def __call__(self, y_true, y_pred, conf_threshold=None):
+        if conf_threshold is None:
+            conf_threshold = self.conf_threshold
+        y_pred_temp = [
+            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
+            for y_pred_patch in y_pred]
+        scores = [score_craters_on_patch(t, p) for t, p in zip(y_true,
+                                                               y_pred_temp)]
         weights = [len(t) for t in y_true]
         return np.average(scores, weights=weights)

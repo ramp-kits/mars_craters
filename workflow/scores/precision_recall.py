@@ -220,12 +220,18 @@ class Precision(BaseScoreType):
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='precision', precision=2):
+    def __init__(self, name='precision', precision=2, conf_threshold=0.5):
         self.name = name
         self.precision = precision
+        self.conf_threshold = conf_threshold
 
-    def __call__(self, y_true, y_pred):
-        return precision(y_true, y_pred)
+    def __call__(self, y_true, y_pred, conf_threshold=None):
+        if conf_threshold is None:
+            conf_threshold = self.conf_threshold
+        y_pred_temp = [
+            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
+            for y_pred_patch in y_pred]
+        return precision(y_true, y_pred_temp)
 
 
 class Recall(BaseScoreType):
@@ -233,12 +239,18 @@ class Recall(BaseScoreType):
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='recall', precision=2):
+    def __init__(self, name='recall', precision=2, conf_threshold=0.5):
         self.name = name
         self.precision = precision
+        self.conf_threshold = conf_threshold
 
-    def __call__(self, y_true, y_pred):
-        return recall(y_true, y_pred)
+    def __call__(self, y_true, y_pred, conf_threshold=None):
+        if conf_threshold is None:
+            conf_threshold = self.conf_threshold
+        y_pred_temp = [
+            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
+            for y_pred_patch in y_pred]
+        return recall(y_true, y_pred_temp)
 
 
 class MAD_Center(BaseScoreType):
@@ -246,12 +258,18 @@ class MAD_Center(BaseScoreType):
     minimum = 0.0
     maximum = np.inf
 
-    def __init__(self, name='mad_center', precision=2):
+    def __init__(self, name='mad_center', precision=2, conf_threshold=0.5):
         self.name = name
         self.precision = precision
+        self.conf_threshold = conf_threshold
 
-    def __call__(self, y_true, y_pred):
-        return mad_center(y_true, y_pred)
+    def __call__(self, y_true, y_pred, conf_threshold=None):
+        if conf_threshold is None:
+            conf_threshold = self.conf_threshold
+        y_pred_temp = [
+            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
+            for y_pred_patch in y_pred]
+        return mad_center(y_true, y_pred_temp)
 
 
 class MAD_Radius(BaseScoreType):
@@ -259,9 +277,15 @@ class MAD_Radius(BaseScoreType):
     minimum = 0.0
     maximum = np.inf
 
-    def __init__(self, name='mad_radius', precision=2):
+    def __init__(self, name='mad_radius', precision=2, conf_threshold=0.5):
         self.name = name
         self.precision = precision
+        self.conf_threshold = conf_threshold
 
-    def __call__(self, y_true, y_pred):
-        return mad_radius(y_true, y_pred)
+    def __call__(self, y_true, y_pred, conf_threshold=None):
+        if conf_threshold is None:
+            conf_threshold = self.conf_threshold
+        y_pred_temp = [
+            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
+            for y_pred_patch in y_pred]
+        return mad_radius(y_true, y_pred_temp)

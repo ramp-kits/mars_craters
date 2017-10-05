@@ -23,7 +23,7 @@ class ObjectDetector:
         hough_radii = list(np.arange(5, 20, 1)) + list(np.arange(20, 50, 2))
 
         circles = hough_circle(edges, hough_radii)
-        print('Max val: ', np.max(circles))
+        # print('Max val: ', np.max(circles))
         peaks = hough_circle_peaks(circles, hough_radii,
                                    threshold=self.threshold)
         return edges, peaks
@@ -34,7 +34,7 @@ class ObjectDetector:
     def _predict_single(self, X):
         edges, peaks = self._hough_detection(X)
         accum, cx, cy, radii = peaks
-        return list(zip(cx, cy, radii))
+        return list(zip(cx, cy, radii, accum))
 
     def show_prediction(self, X):
         import matplotlib.pyplot as plt

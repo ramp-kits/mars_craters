@@ -21,8 +21,10 @@ workflow = local_workflow.workflow.ObjectDetector(
 
 score_types = [
     local_workflow.scores.Ospa(),
-    # local_scores.Accuracy(name='acc'),
-    # local_scores.NegativeLogLikelihood(name='nll'),
+    local_workflow.scores.Precision(),
+    local_workflow.scores.Recall(),
+    local_workflow.scores.MAD_Center(),
+    local_workflow.scores.MAD_Radius(),
 ]
 
 
