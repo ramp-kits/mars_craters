@@ -53,7 +53,8 @@ def _read_data(path, f_name):
     n_cum = np.array(n_true_patches).cumsum()
 
     labels_array = labels[['x_p', 'y_p', 'radius_p']].values
-    y = [labels_array[i:j] for i, j in zip(n_cum[:-1], n_cum[1:])]
+    y = [[tuple(x) for x in labels_array[i:j]] for i, j in
+         zip(n_cum[:-1], n_cum[1:])]
 
     # df = pd.read_csv(os.path.join(path, 'data', f_name))
     # X = df['id'].values
