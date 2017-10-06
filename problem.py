@@ -39,13 +39,21 @@ def _read_data(path, f_name):
     labels = pd.read_csv("data/quad77_labels.csv")
 
     # convert the dataframe with crater positions to list of
-    # list of (x, y, radius) tuples
-    # -> for each patch number, select the corresponding craters and convert
-    #    the x_p, y_p and radius_p columns to tuples
-    y = [list(labels
-              .loc[labels.id == '77_{0}'.format(i), ['x_p', 'y_p', 'radius_p']]
-              .itertuples(name=None, index=False))
-         for i in range(src.shape[0])]
+    # list of (x, y, radius) tuples (list of arrays of shape (n, 3) with n
+    # true craters on an image
+
+    # TODO this will not be needed if we appropriately save labels csv file
+    labels['i'] = labels.id.str[3:].astype(int)
+    labels = labels.sort_values('i')
+
+    # determine locations of craters for each patch in the labels array
+    n_true_patches = labels.groupby('i').size().reindex(
+        range(-1, src.shape[0]), fill_value=0).values
+    n_cum = np.array(n_true_patches).cumsum()
+
+    labels_array = labels[['x_p', 'y_p', 'radius_p']].values
+    y = [[tuple(x) for x in labels_array[i:j]] for i, j in
+         zip(n_cum[:-1], n_cum[1:])]
 
     # df = pd.read_csv(os.path.join(path, 'data', f_name))
     # X = df['id'].values
