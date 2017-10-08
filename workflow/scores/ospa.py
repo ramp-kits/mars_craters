@@ -114,7 +114,7 @@ def ospa(y_true, y_pred):
     return np.average(scores, weights=weights)
 
 
-class Ospa(BaseScoreType):
+class OSPA(BaseScoreType):
     is_lower_the_better = False
     minimum = 0.0
     maximum = 1.0
