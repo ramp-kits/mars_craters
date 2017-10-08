@@ -27,24 +27,16 @@ def score_craters_on_patch(y_true, y_pred):
     y_true = np.atleast_2d(y_true).T
     y_pred = np.atleast_2d(y_pred).T
 
-    ospa_score = ospa(y_true, y_pred)
+    ospa_score = ospa_single(y_true, y_pred)
 
     score = 1 - ospa_score
 
     return score
 
 
-def ospa(x_arr, y_arr, cut_off=1):
+def ospa_single(x_arr, y_arr, cut_off=1):
     """
-    Optimal Subpattern Assignment (OSPA) metric for IoU score
-
-    This metric provides a coherent way to compute the miss-distance
-    between the detection and alignment of objects. Among all
-    combinations of true/predicted pairs, if finds the best alignment
-    to minimise the distance, and still takes into account missing
-    or in-excess predicted values through a cardinality score.
-
-    The lower the value the smaller the distance.
+    OSPA score on single patch. See docstring of `ospa` for more info.
 
     Parameters
     ----------
@@ -57,10 +49,6 @@ def ospa(x_arr, y_arr, cut_off=1):
     -------
     float: distance between input arrays
 
-    References
-    ----------
-    http://www.dominic.schuhmacher.name/papers/ospa.pdf
-
     """
     x_size = x_arr.size
     y_size = y_arr.size
@@ -69,7 +57,7 @@ def ospa(x_arr, y_arr, cut_off=1):
     _, n = y_arr.shape
 
     if m > n:
-        return ospa(y_arr, x_arr, cut_off)
+        return ospa_single(y_arr, x_arr, cut_off)
 
     # NO CRATERS
     # ----------
@@ -96,6 +84,36 @@ def ospa(x_arr, y_arr, cut_off=1):
     return dist
 
 
+def ospa(y_true, y_pred):
+    """
+    Optimal Subpattern Assignment (OSPA) metric for IoU score
+
+    This metric provides a coherent way to compute the miss-distance
+    between the detection and alignment of objects. Among all
+    combinations of true/predicted pairs, if finds the best alignment
+    to minimise the distance, and still takes into account missing
+    or in-excess predicted values through a cardinality score.
+
+    The lower the value the smaller the distance.
+
+    Parameters
+    ----------
+    y_true, y_pred : list of list of tuples
+
+    Returns
+    -------
+    float: distance between input arrays
+
+    References
+    ----------
+    http://www.dominic.schuhmacher.name/papers/ospa.pdf
+
+    """
+    scores = [score_craters_on_patch(t, p) for t, p in zip(y_true, y_pred)]
+    weights = [len(t) for t in y_true]
+    return np.average(scores, weights=weights)
+
+
 class Ospa(BaseScoreType):
     is_lower_the_better = False
     minimum = 0.0
@@ -112,7 +130,4 @@ class Ospa(BaseScoreType):
         y_pred_temp = [
             [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
             for y_pred_patch in y_pred]
-        scores = [score_craters_on_patch(t, p) for t, p in zip(y_true,
-                                                               y_pred_temp)]
-        weights = [len(t) for t in y_true]
-        return np.average(scores, weights=weights)
+        return ospa(y_true, y_pred_temp)

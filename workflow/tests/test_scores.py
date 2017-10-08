@@ -6,8 +6,10 @@ import pytest
 
 import numpy as np
 
-from ..scores import (ospa, score_craters_on_patch, mask_detection,
-                      precision, recall, mad_radius, mad_center)
+from ..scores import precision, recall, mad_radius, mad_center
+from ..scores.ospa import ospa_single, score_craters_on_patch
+from ..scores.mask import mask_detection_single
+
 
 x = [(1, 1, 1)]
 x2 = [(1, 1, 2)]
@@ -17,17 +19,17 @@ z = x + y
 
 def test_mask_detection():
     # Perfect match
-    assert mask_detection(x, x) == 0
+    assert mask_detection_single(x, x) == 0
     # No match
-    assert mask_detection(x, y) == 2
-    assert mask_detection(x, x2) > 0
+    assert mask_detection_single(x, y) == 2
+    assert mask_detection_single(x, x2) > 0
     # 1 match, 1 miss
-    assert mask_detection(x, z) == 1
+    assert mask_detection_single(x, z) == 1
     # 1 empty, 1 not
-    assert mask_detection(x, []) == 1
-    assert mask_detection([], x) == 1
+    assert mask_detection_single(x, []) == 1
+    assert mask_detection_single([], x) == 1
     # 2 empty arrays
-    assert mask_detection([], []) == 0
+    assert mask_detection_single([], []) == 0
 
 
 def test_score_craters_on_patch():
@@ -53,18 +55,18 @@ def test_ospa():
     empty_arr = np.atleast_2d([]).T
 
     # Match
-    assert ospa(x_arr, x_arr) == 0
+    assert ospa_single(x_arr, x_arr) == 0
     # Miss or wrong radius
-    assert ospa(x_arr, y_arr) == 1
-    assert ospa(x_arr, x2_arr) > 0
+    assert ospa_single(x_arr, y_arr) == 1
+    assert ospa_single(x_arr, x2_arr) > 0
     # One match, one miss
-    assert ospa(x_arr, z_arr) - 0.5 < 1e-6
+    assert ospa_single(x_arr, z_arr) - 0.5 < 1e-6
     # An empty array with a non empty one
-    assert ospa(x_arr, empty_arr) == 1
-    assert ospa(empty_arr, x_arr) == 1
-    assert ospa(z_arr, empty_arr) == 1
+    assert ospa_single(x_arr, empty_arr) == 1
+    assert ospa_single(empty_arr, x_arr) == 1
+    assert ospa_single(z_arr, empty_arr) == 1
     # Two empty arrays should match
-    assert ospa(empty_arr, empty_arr) == 0
+    assert ospa_single(empty_arr, empty_arr) == 0
 
 
 def test_precision_recall():
@@ -100,3 +102,29 @@ def test_precision_recall():
     assert recall(y_true, y_pred) == 0
     assert math.isnan(mad_radius(y_true, y_pred))
     assert math.isnan(mad_center(y_true, y_pred))
+
+
+def test_average_precision():
+    from ..scores import AveragePrecision
+    ap = AveragePrecision()
+
+    # perfect match
+    y_true = [[(1, 1, 1), (3, 3, 1)]]
+    y_pred = [[(1, 1, 1, 1), (3, 3, 1, 1)]]
+    assert ap(y_true, y_pred) == 1
+
+    # imperfect match
+    y_true = [[(1, 1, 1), (3, 3, 1), (7, 7, 1), (9, 9, 1)]]
+    y_pred = [[(1, 1, 1, 1), (5, 5, 1, 1)]]
+    assert ap(y_true, y_pred) == pytest.approx(3. / 2 / 11, rel=1e-5)
+    # would be 0.125 (1 / 8) exact method
+
+    y_true = [[(1, 1, 1), (3, 3, 1), (7, 7, 1), (9, 9, 1)]]
+    y_pred = [[(1, 1.2, 1.2, 1), (3, 3, 1, 1)]]
+    assert ap(y_true, y_pred) == pytest.approx(6. / 11, rel=1e-5)
+    # would be 0.5 with exact method
+
+    # no match
+    y_true = [[(1, 1, 1)]]
+    y_pred = [[(3, 3, 1, 1)]]
+    assert ap(y_true, y_pred) == 0

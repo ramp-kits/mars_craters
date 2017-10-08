@@ -7,7 +7,7 @@ from rampwf.score_types.base import BaseScoreType
 from ._circles import circle_map
 
 
-def mask_detection(y_true, y_pred):
+def mask_detection_single(y_true, y_pred):
     """
     Score based on a matching by reprojection of craters on mask-map
 
@@ -39,6 +39,35 @@ def mask_detection(y_true, y_pred):
     return score
 
 
+def mask_detection(y_true, y_pred):
+    """
+    Score based on a matching by reprojection of craters on mask-map
+
+    True craters are projected positively, predicted craters negatively,
+    so they can cancel out. Then the sum of the absolute value of the
+    residual map is taken.
+
+    The best score value for a perfect match is 0.
+    The worst score value for a given patch is the sum of all crater
+    instances in both `y_true` and `y_pred`.
+
+    Parameters
+    ----------
+    y_true : list of list of tuples (x, y, radius)
+        List of coordinates and radius of actual craters for set of patches
+    y_pred : list of list of tuples (x, y, radius)
+        List of coordinates and radius of predicted craters for set of patches
+
+    Returns
+    -------
+    float : score for a given patch, the higher the better
+
+    """
+    scores = [mask_detection_single(t, p) for t, p in zip(y_true, y_pred)]
+    true_craters = [len(t) for t in y_true]
+    return np.sum(scores) / np.sum(true_craters)
+
+
 class MaskDetection(BaseScoreType):
     is_lower_the_better = True
     minimum = 0.0
@@ -55,6 +84,4 @@ class MaskDetection(BaseScoreType):
         y_pred_temp = [
             [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
             for y_pred_patch in y_pred]
-        scores = [mask_detection(t, p) for t, p in zip(y_true, y_pred_temp)]
-        true_craters = [len(t) for t in y_true]
-        return np.sum(scores) / np.sum(true_craters)
+        return mask_detection(y_true, y_pred_temp)
