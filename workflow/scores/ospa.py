@@ -21,16 +21,12 @@ def score_craters_on_patch(y_true, y_pred):
 
     Returns
     -------
-    float : score for a given path, the higher the better
+    float : score for a given path, the lower the better
 
     """
     y_true = np.atleast_2d(y_true).T
     y_pred = np.atleast_2d(y_pred).T
-
-    ospa_score = ospa_single(y_true, y_pred)
-
-    score = 1 - ospa_score
-
+    score = ospa_single(y_true, y_pred)
     return score
 
 
@@ -115,11 +111,11 @@ def ospa(y_true, y_pred):
 
 
 class OSPA(BaseScoreType):
-    is_lower_the_better = False
+    is_lower_the_better = True
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='OSPA', precision=2, conf_threshold=0.5):
+    def __init__(self, name='ospa', precision=2, conf_threshold=0.5):
         self.name = name
         self.precision = precision
         self.conf_threshold = conf_threshold
