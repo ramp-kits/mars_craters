@@ -8,8 +8,7 @@ import numpy as np
 
 from ..scores import precision, recall, mad_radius, mad_center
 from ..scores.ospa import ospa_single, score_craters_on_patch
-from ..scores.mask import mask_detection_single
-
+from ..scores.scp import scp_single
 
 x = [(1, 1, 1)]
 x2 = [(1, 1, 2)]
@@ -19,17 +18,17 @@ z = x + y
 
 def test_mask_detection():
     # Perfect match
-    assert mask_detection_single(x, x) == 0
+    assert scp_single(x, x) == 0
     # No match
-    assert mask_detection_single(x, y) == 2
-    assert mask_detection_single(x, x2) > 0
+    assert scp_single(x, y) == 2
+    assert scp_single(x, x2) > 0
     # 1 match, 1 miss
-    assert mask_detection_single(x, z) == 1
+    assert scp_single(x, z) == 1
     # 1 empty, 1 not
-    assert mask_detection_single(x, []) == 1
-    assert mask_detection_single([], x) == 1
+    assert scp_single(x, []) == 1
+    assert scp_single([], x) == 1
     # 2 empty arrays
-    assert mask_detection_single([], []) == 0
+    assert scp_single([], []) == 0
 
 
 def test_score_craters_on_patch():
