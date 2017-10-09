@@ -1,59 +1,72 @@
-from IPython.display import display
-
 import numpy as np
 
-from skimage import color
-from skimage.transform import hough_circle, hough_circle_peaks
-from skimage.feature import canny
-from skimage.draw import circle_perimeter
+from joblib import Parallel, delayed
+
+from sklearn.base import clone
+from imblearn.ensemble import BalancedBaggingClassifier
+
+from .extraction import BlobExtractor
 
 
-class ObjectDetector:
-    def __init__(self, sigma=3, threshold=0.4):
-        self.sigma = sigma
-        self.threshold = threshold
+class ObjectDetector(object):
+    def __init__(self, extractor=None, estimator=None, n_jobs=1):
+        self.extractor = extractor
+        self.estimator = estimator
+        self.n_jobs = n_jobs
+
+    def _extract_features(self, X, y):
+        # extract feature for all the image containing craters
+        data_extracted = Parallel(n_jobs=self.n_jobs)(
+            delayed(self.extractor_.fit_extract)(image, craters)
+            for image, craters in zip(X, y))
+
+        # organize the data to fit it inside the classifier
+        data, location, target, idx_cand_to_img = [], [], [], []
+        for img_idx, candidate in enumerate(data_extracted):
+            # check if this is an empty features
+            if len(candidate[0]):
+                data.append(np.vstack(candidate[0]))
+                location += candidate[1]
+                target += candidate[2]
+                idx_cand_to_img += [img_idx] * len(candidate[1])
+        # convert to numpy array the data needed to feed the classifier
+        data = np.concatenate(data)
+        target = np.array(target)
+
+        return data, location, target, idx_cand_to_img
 
     def fit(self, X, y):
+        if self.extractor is None:
+            self.extractor_ = BlobExtractor()
+        else:
+            self.extractor_ = clone(self.extractor)
+
+        if self.estimator is None:
+            self.estimator_ = BalancedBaggingClassifier(n_jobs=self.n_jobs)
+        else:
+            self.estimator_ = clone(self.estimator)
+
+        # extract the features for the training data
+        data, _, target, _ = self._extract_features(X, y)
+
+        # fit the underlying classifier
+        self.estimator_.fit(data, target)
+
         return self
 
-    def _hough_detection(self, image):
-        edges = canny(image, sigma=self.sigma, low_threshold=10,
-                      high_threshold=50)
-
-        hough_radii = list(np.arange(5, 20, 1)) + list(np.arange(20, 50, 2))
-
-        circles = hough_circle(edges, hough_radii)
-        # print('Max val: ', np.max(circles))
-        peaks = hough_circle_peaks(circles, hough_radii,
-                                   threshold=self.threshold)
-        return edges, peaks
-
     def predict(self, X):
-        return [self._predict_single(img) for img in X]
+        # extract the data for the current image
+        data, location, _, idx_cand_to_img = self._extract_features(
+            X, [None] * len(X))
 
-    def _predict_single(self, X):
-        edges, peaks = self._hough_detection(X)
-        accum, cx, cy, radii = peaks
-        return list(zip(cx, cy, radii, accum))
+        # classify each candidate
+        y_pred = self.estimator_.predict_proba(data)
 
-    def show_prediction(self, X):
-        import matplotlib.pyplot as plt
+        # organize the output
+        output = [[] for _ in range(len(X))]
+        crater_idx = np.flatnonzero(self.estimator_.classes_ == 1)[0]
+        for crater, pred, img_idx in zip(location, y_pred, idx_cand_to_img):
+            output[img_idx].append((crater[0], crater[1], crater[2],
+                                    pred[crater_idx]))
 
-        edges, peaks = self._hough_detection(X)
-        accum, cx, cy, radii = peaks
-
-        image = X
-
-        fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(15, 6))
-        image2 = color.gray2rgb(image)
-        _, cx, cy, radii = peaks
-        for center_y, center_x, radius in zip(cy, cx, radii):
-            circy, circx = circle_perimeter(center_y, center_x, radius)
-            image2[circy, circx] = (220, 20, 20)
-
-        print("Radius of circles", peaks[3])
-
-        ax[0].imshow(image, cmap=plt.cm.gray)
-        ax[1].imshow(edges, cmap=plt.cm.gray)
-        ax[2].imshow(image2, cmap=plt.cm.gray)
-        display(fig)
+        return output
