@@ -65,7 +65,11 @@ class ObjectDetector(object):
         clf = detector.ObjectDetector()
 
         # train and return fitted model
-        clf.fit(X[train_is], y[train_is])
+        if isinstance(train_is, slice):
+            y_train = y[train_is]
+        else:
+            y_train = [y[i] for i in train_is]
+        clf.fit(X[train_is], y_train)
         return clf
 
     def test_submission(self, trained_model, X):
