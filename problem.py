@@ -10,10 +10,8 @@ local_workflow = imp.load_package('workflow', './workflow')
 
 
 problem_title = 'Mars craters detection and classification'
-
 # A type (class) which will be used to create wrapper objects for y_pred
-Predictions = local_workflow.predictions.Predictions
-
+Predictions = rw.prediction_types.make_detection()
 # An object implementing the workflow
 workflow = local_workflow.workflow.ObjectDetector()
 
