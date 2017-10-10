@@ -9,9 +9,9 @@ except ImportError:
 
 URLBASE = 'https://storage.ramp.studio/mars_craters/{}'
 DATA = [
-    'images_quad_77.npy', ]
+    'data_train.npy', 'data_test.npy']
 LABELS = [
-    'quad77_labels.csv', ]
+    'labels_train.csv', 'labels_test.csv']
 
 
 def main(output_dir='data'):

@@ -1,4 +1,5 @@
 import imp
+import os
 
 import numpy as np
 import pandas as pd
@@ -25,50 +26,46 @@ score_types = [
 ]
 
 
-def get_cv(folder_X, y):
+def get_cv(X, y):
     # _, X = folder_X
     # cv = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=57)
     # return cv.split(X, y)
 
-    # for now dummy CV that has one fold with all data for both train/valid
-    return [(slice(None), slice(None)), ]
+    # quadrangles for training have shape:  4082, 3397, 2698 (total 10177)
+    # for each fold use one quadrangle as test set, the other two as training
+    return [(slice(0, 4082 + 3397), slice(4082 + 3397, None)),
+            (slice(4082, None), slice(None, 4082)),
+            (np.r_[0:4082, 4082+3397:10177], slice(4082, 4082 + 3397))]
 
 
-def _read_data(path, f_name):
-    src = np.load('data/images_quad_77.npy', mmap_mode='r')
-    labels = pd.read_csv("data/quad77_labels.csv")
+def _read_data(path, typ):
+
+    data_path = os.path.join(path, 'data', 'data_{}.npy'.format(typ))
+    src = np.load(data_path, mmap_mode='r')
+
+    labels_path = os.path.join(path, 'data', 'labels_{}.csv'.format(typ))
+    labels = pd.read_csv(labels_path)
 
     # convert the dataframe with crater positions to list of
     # list of (x, y, radius) tuples (list of arrays of shape (n, 3) with n
     # true craters on an image
-
-    # TODO this will not be needed if we appropriately save labels csv file
-    labels['i'] = labels.id.str[3:].astype(int)
-    labels = labels.sort_values('i')
 
     # determine locations of craters for each patch in the labels array
     n_true_patches = labels.groupby('i').size().reindex(
         range(-1, src.shape[0]), fill_value=0).values
     n_cum = np.array(n_true_patches).cumsum()
 
-    labels_array = labels[['x_p', 'y_p', 'radius_p']].values
+    labels_array = labels[['row_p', 'col_p', 'radius_p']].values
     y = [[tuple(x) for x in labels_array[i:j]] for i, j in
          zip(n_cum[:-1], n_cum[1:])]
 
-    # df = pd.read_csv(os.path.join(path, 'data', f_name))
-    # X = df['id'].values
-    # y = df['class'].values
-    # folder = os.path.join(path, 'data', 'imgs')
-
     # return src, y
-    return src[:200, :, :], y[:200]
+    return src, y
 
 
 def get_test_data(path='.'):
-    f_name = 'test.csv'
-    return _read_data(path, f_name)
+    return _read_data(path, 'test')
 
 
 def get_train_data(path='.'):
-    f_name = 'train.csv'
-    return _read_data(path, f_name)
+    return _read_data(path, 'train')
