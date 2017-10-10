@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
-# import rampwf as rw
+import rampwf as rw
 
 
 local_workflow = imp.load_package('workflow', './workflow')
@@ -18,12 +18,13 @@ Predictions = local_workflow.predictions.Predictions
 workflow = local_workflow.workflow.ObjectDetector()
 
 score_types = [
-    local_workflow.scores.SCP(
+    rw.score_types.SCP(
         shape=(224, 224), precision=4, minipatch=[56, 168, 56, 168]),
-    local_workflow.scores.OSPA(precision=4),
-    local_workflow.scores.AveragePrecision(precision=4),
-    local_workflow.scores.Precision(precision=4),
-    local_workflow.scores.Recall(precision=4),
+    # rw.score_types.OSPA(precision=4, minipatch=[56, 168, 56, 168]),
+    rw.score_types.OSPA(precision=4),
+    rw.score_types.AverageDetectionPrecision(name='ap', precision=4),
+    rw.score_types.DetectionPrecision(name='prec', precision=4),
+    rw.score_types.DetectionRecall(name='rec', precision=4),
 ]
 
 
