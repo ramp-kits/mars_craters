@@ -1,4 +1,5 @@
 import imp
+import os
 
 import numpy as np
 import pandas as pd
@@ -26,50 +27,70 @@ score_types = [
 ]
 
 
-def get_cv(folder_X, y):
-    # _, X = folder_X
-    # cv = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=57)
-    # return cv.split(X, y)
+def get_cv(X, y):
+    # 3 quadrangles for training have not exactly the same size,
+    # but for simplicity just cut in 3
+    # for each fold use one quadrangle as test set, the other two as training
 
-    # for now dummy CV that has one fold with all data for both train/valid
-    return [(slice(None), slice(None)), ]
+    n_tot = len(X)
+    n1 = n_tot // 3
+    n2 = n1 * 2
+
+    return [(slice(0, n2), slice(n2, None)),
+            (slice(n1, None), slice(None, n1)),
+            (np.r_[0:n1, n2:n_tot], slice(n1, n2))]
 
 
-def _read_data(path, f_name):
-    src = np.load('data/images_quad_77.npy', mmap_mode='r')
-    labels = pd.read_csv("data/quad77_labels.csv")
+def _read_data(path, typ):
+    """
+    Read and process data and labels
+
+    Parameters
+    ----------
+    path : path to directory that has 'data' subdir
+    typ : {'train', 'test'}
+
+    Returns
+    -------
+    X, y data
+
+    """
+    try:
+        data_path = os.path.join(path, 'data', 'data_{}.npy'.format(typ))
+        src = np.load(data_path, mmap_mode='r')
+
+        labels_path = os.path.join(path, 'data', 'labels_{}.csv'.format(typ))
+        labels = pd.read_csv(labels_path)
+    except IOError:
+        raise IOError("'data/data_{}.npy' and 'data/labels_{}.csv' are not "
+                      "found. Ensure you ran 'python download_data.py' to "
+                      "obtain the train/test data".format(typ))
 
     # convert the dataframe with crater positions to list of
     # list of (x, y, radius) tuples (list of arrays of shape (n, 3) with n
     # true craters on an image
 
-    # TODO this will not be needed if we appropriately save labels csv file
-    labels['i'] = labels.id.str[3:].astype(int)
-    labels = labels.sort_values('i')
-
     # determine locations of craters for each patch in the labels array
     n_true_patches = labels.groupby('i').size().reindex(
-        range(-1, src.shape[0]), fill_value=0).values
+        range(src.shape[0]), fill_value=0).values
+    # make cumulative sum to obtain start/stop to slice the labels
     n_cum = np.array(n_true_patches).cumsum()
+    n_cum = np.insert(n_cum, 0, 0)
 
-    labels_array = labels[['x_p', 'y_p', 'radius_p']].values
-    y = [[tuple(x) for x in labels_array[i:j]] for i, j in
-         zip(n_cum[:-1], n_cum[1:])]
-
-    # df = pd.read_csv(os.path.join(path, 'data', f_name))
-    # X = df['id'].values
-    # y = df['class'].values
-    # folder = os.path.join(path, 'data', 'imgs')
+    labels_array = labels[['row_p', 'col_p', 'radius_p']].values
+    y = [[tuple(x) for x in labels_array[i:j]]
+         for i, j in zip(n_cum[:-1], n_cum[1:])]
+    # convert list to object array of lists
+    y_array = np.empty(len(y), dtype=object)
+    y_array[:] = y
 
     # return src, y
-    return src[:200, :, :], y[:200]
+    return src, y_array
 
 
 def get_test_data(path='.'):
-    f_name = 'test.csv'
-    return _read_data(path, f_name)
+    return _read_data(path, 'test')
 
 
 def get_train_data(path='.'):
-    f_name = 'train.csv'
-    return _read_data(path, f_name)
+    return _read_data(path, 'train')

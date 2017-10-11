@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class ObjectDetector:
     def __init__(self):
         pass
@@ -6,4 +9,4 @@ class ObjectDetector:
         return self
 
     def predict(self, X):
-        return [[(1.0, 112.0, 112.0, 112.0)] for img in X]
+        return np.array([[(1.0, 112.0, 112.0, 112.0)] for img in X])
