@@ -42,6 +42,19 @@ def get_cv(X, y):
 
 
 def _read_data(path, typ):
+    """
+    Read and process data and labels
+
+    Parameters
+    ----------
+    path : path to directory that has 'data' subdir
+    typ : {'train', 'test'}
+
+    Returns
+    -------
+    X, y data
+
+    """
 
     data_path = os.path.join(path, 'data', 'data_{}.npy'.format(typ))
     src = np.load(data_path, mmap_mode='r')
@@ -55,12 +68,15 @@ def _read_data(path, typ):
 
     # determine locations of craters for each patch in the labels array
     n_true_patches = labels.groupby('i').size().reindex(
-        range(-1, src.shape[0]), fill_value=0).values
+        range(src.shape[0]), fill_value=0).values
+    # make cumulative sum to obtain start/stop to slice the labels
     n_cum = np.array(n_true_patches).cumsum()
+    n_cum = np.insert(n_cum, 0, 0)
 
     labels_array = labels[['row_p', 'col_p', 'radius_p']].values
-    y = [[tuple(x) for x in labels_array[i:j]] for i, j in
-         zip(n_cum[:-1], n_cum[1:])]
+    y = [[tuple(x) for x in labels_array[i:j]]
+         for i, j in zip(n_cum[:-1], n_cum[1:])]
+    # convert list to object array of lists
     y_array = np.empty(len(y), dtype=object)
     y_array[:] = y
 
