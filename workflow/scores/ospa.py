@@ -2,128 +2,100 @@ from __future__ import division
 
 import numpy as np
 
-from rampwf.score_types.base import BaseScoreType
-
-from ..iou import cc_iou as iou
+from .detection_base import DetectionBaseScoreType
 from .precision_recall import _match_tuples
+from .precision_recall import _select_minipatch_tuples
 
 
-def score_craters_on_patch(y_true, y_pred):
-    """
-    Main OSPA score for single patch
-
-    Parameters
-    ----------
-    y_true : list of tuples (x, y, radius)
-        List of coordinates and radius of actual craters in a patch
-    y_pred : list of tuples (x, y, radius)
-        List of coordinates and radius of craters predicted in the patch
-
-    Returns
-    -------
-    float : score for a given path, the lower the better
-
-    """
-    y_true = np.atleast_2d(y_true).T
-    y_pred = np.atleast_2d(y_pred).T
-    score = ospa_single(y_true, y_pred)
-    return score
-
-
-def ospa_single(x_arr, y_arr, cut_off=1):
+def ospa_single(y_true, y_pred, cut_off=1, minipatch=None):
     """
     OSPA score on single patch. See docstring of `ospa` for more info.
 
     Parameters
     ----------
-    x_arr, y_arr : ndarray of shape (3, x)
+    y_true, y_pred : ndarray of shape (3, x)
         arrays of (x, y, radius)
     cut_off : float, optional (default is 1)
         penalizing value for wrong cardinality
+    minipatch : list of int, optional
+        Bounds of the internal scoring patch (default is None)
 
     Returns
     -------
     float: distance between input arrays
 
     """
-    x_size = x_arr.size
-    y_size = y_arr.size
+    n_true = len(y_true)
+    n_pred = len(y_pred)
 
-    _, m = x_arr.shape
-    _, n = y_arr.shape
+    n_max = max(n_true, n_pred)
+    n_min = min(n_true, n_pred)
 
-    if m > n:
-        return ospa_single(y_arr, x_arr, cut_off)
-
-    # NO CRATERS
-    # ----------
-    # GOOD MATCH
-    if x_size == 0 and y_size == 0:
+    # No craters and none found
+    if n_true == 0 and n_pred == 0:
         return 0
 
-    # BAD MATCH
-    if x_size == 0 or y_size == 0:
+    # No craters and some found or existing craters but non found
+    if n_true == 0 or n_pred == 0:
         return cut_off
 
-    # CRATERS
-    # -------
-
     # OSPA METRIC
-    _, _, ious = _match_tuples(x_arr.T.tolist(), y_arr.T.tolist())
-    iou_score = ious.sum()
+    id_true, id_pred, ious = _match_tuples(y_true, y_pred)
 
-    distance_score = m - iou_score
-    cardinality_score = cut_off * (n - m)
+    if minipatch is not None:
+        true_in_minipatch = _select_minipatch_tuples(y_true[id_true])
+        pred_in_minipatch = _select_minipatch_tuples(y_pred[id_pred])
+        is_valid = true_in_minipatch & pred_in_minipatch
+        iou_score = ious[is_valid].sum()
+    else:
+        iou_score = ious.sum()
 
-    dist = 1 / n * (distance_score + cardinality_score)
+    distance_score = n_min - iou_score
+    cardinality_score = cut_off * (n_max - n_min)
+
+    dist = 1 / n_max * (distance_score + cardinality_score)
 
     return dist
 
 
-def ospa(y_true, y_pred):
-    """
-    Optimal Subpattern Assignment (OSPA) metric for IoU score
-
-    This metric provides a coherent way to compute the miss-distance
-    between the detection and alignment of objects. Among all
-    combinations of true/predicted pairs, if finds the best alignment
-    to minimise the distance, and still takes into account missing
-    or in-excess predicted values through a cardinality score.
-
-    The lower the value the smaller the distance.
-
-    Parameters
-    ----------
-    y_true, y_pred : list of list of tuples
-
-    Returns
-    -------
-    float: distance between input arrays
-
-    References
-    ----------
-    http://www.dominic.schuhmacher.name/papers/ospa.pdf
-
-    """
-    scores = [score_craters_on_patch(t, p) for t, p in zip(y_true, y_pred)]
-    weights = [len(t) for t in y_true]
-    return np.average(scores, weights=weights)
-
-
-class OSPA(BaseScoreType):
+class OSPA(DetectionBaseScoreType):
     is_lower_the_better = True
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='ospa', precision=2, conf_threshold=0.5):
+    def __init__(self, name='ospa', precision=2, conf_threshold=0.5,
+                 cut_off=1, minipatch=None):
         self.name = name
         self.precision = precision
         self.conf_threshold = conf_threshold
+        self.minipatch = minipatch
+        self.cut_off = cut_off
 
-    def __call__(self, y_true, y_pred, conf_threshold=None):
-        if conf_threshold is None:
-            conf_threshold = self.conf_threshold
-        y_pred_temp = [
-            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
-            for y_pred_patch in y_pred]
-        return ospa(y_true, y_pred_temp)
+    def detection_score(self, y_true, y_pred):
+        """Optimal Subpattern Assignment (OSPA) metric for IoU score.
+
+        This metric provides a coherent way to compute the miss-distance
+        between the detection and alignment of objects. Among all
+        combinations of true/predicted pairs, if finds the best alignment
+        to minimise the distance, and still takes into account missing
+        or in-excess predicted values through a cardinality score.
+
+        The lower the value the smaller the distance.
+
+        Parameters
+        ----------
+        y_true, y_pred : list of list of tuples
+
+        Returns
+        -------
+        float: distance between input arrays
+
+        References
+        ----------
+        http://www.dominic.schuhmacher.name/papers/ospa.pdf
+
+        """
+        scores = [ospa_single(t, p, self.cut_off, self.minipatch)
+                  for t, p in zip(y_true, y_pred)]
+        weights = [len(t) for t in y_true]
+        return np.average(scores, weights=weights)

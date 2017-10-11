@@ -6,4 +6,4 @@ class ObjectDetector:
         return self
 
     def predict(self, X):
-        return [[(112.0, 112.0, 56.0, 1.0)] for img in X]
+        return [[(1.0, 112.0, 112.0, 112.0)] for img in X]

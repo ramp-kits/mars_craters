@@ -3,12 +3,42 @@ from __future__ import division
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from rampwf.score_types.base import BaseScoreType
+from .detection_base import DetectionBaseScoreType
 
 from ..iou import cc_iou as iou
 
 
-def _match_tuples(y_true, y_pred):
+def _select_minipatch_tuples(minipatch, y_true, y_pred):
+    """
+
+    Parameters
+    ----------
+    minipatch : list of int
+        Bounds of the internal scoring patch
+    y_true, y_pred : list of tuples
+        Full list of labels and predictions
+
+    Returns
+    -------
+    y_true, y_pred : list of tuples
+        List of labels and predictions restricted to
+        the central minipatch
+
+    """
+    row_min, row_max, col_min, col_max = minipatch
+
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    y_true_cut = ((y_true[0] >= col_min) & (y_true[0] < col_max) &
+                  (y_true[1] >= row_min) & (y_true[1] < row_max))
+    y_pred_cut = ((y_pred[0] >= col_min) & (y_pred[0] < col_max) &
+                  (y_pred[1] >= row_min) & (y_pred[1] < row_max))
+
+    return y_true[y_true_cut].tolist(), y_pred[y_pred_cut].tolist()
+
+
+def _match_tuples(y_true, y_pred, minipatch=None):
     """
     Given set of true and predicted (x, y, r) tuples, determine the best
     possible match.
@@ -27,8 +57,12 @@ def _match_tuples(y_true, y_pred):
         of y_true and y_pred
 
     """
+
     n_true = len(y_true)
     n_pred = len(y_pred)
+
+    if minipatch is not None:
+        y_true, y_pred = _select_minipatch_tuples(minipatch, y_true, y_pred)
 
     iou_matrix = np.empty((n_true, n_pred))
 
@@ -101,8 +135,8 @@ def _locate_matches(y_true, y_pred, matches, iou_threshold=0.5):
 
     for y_true_p, y_pred_p, matches_p in zip(y_true, y_pred, matches):
 
-        for idx_true, idx_pred, iou in zip(*matches_p):
-            if iou >= iou_threshold:
+        for idx_true, idx_pred, iou_val in zip(*matches_p):
+            if iou_val >= iou_threshold:
                 loc_true.append(y_true_p[idx_true])
                 loc_pred.append(y_pred_p[idx_pred])
 
@@ -112,7 +146,8 @@ def _locate_matches(y_true, y_pred, matches, iou_threshold=0.5):
         return np.empty((0, 3)), np.empty((0, 3))
 
 
-def precision(y_true, y_pred, matches=None, iou_threshold=0.5):
+def precision(y_true, y_pred, matches=None, iou_threshold=0.5,
+              minipatch=None):
     """
     Precision score (fraction of correct predictions).
 
@@ -128,7 +163,8 @@ def precision(y_true, y_pred, matches=None, iou_threshold=0.5):
     precision_score : float [0 - 1]
     """
     if matches is None:
-        matches = [_match_tuples(t, p) for t, p in zip(y_true, y_pred)]
+        matches = [_match_tuples(t, p, minipatch=minipatch)
+                   for t, p in zip(y_true, y_pred)]
 
     n_true, n_pred_all, n_pred_correct = _count_matches(
         y_true, y_pred, matches, iou_threshold=iou_threshold)
@@ -136,7 +172,8 @@ def precision(y_true, y_pred, matches=None, iou_threshold=0.5):
     return n_pred_correct / n_pred_all
 
 
-def recall(y_true, y_pred, matches=None, iou_threshold=0.5):
+def recall(y_true, y_pred, matches=None, iou_threshold=0.5,
+           minipatch=None):
     """
     Recall score (fraction of true objects that are predicted).
 
@@ -152,7 +189,8 @@ def recall(y_true, y_pred, matches=None, iou_threshold=0.5):
     recall_score : float [0 - 1]
     """
     if matches is None:
-        matches = [_match_tuples(t, p) for t, p in zip(y_true, y_pred)]
+        matches = [_match_tuples(t, p, minipatch=minipatch)
+                   for t, p in zip(y_true, y_pred)]
 
     n_true, n_pred_all, n_pred_correct = _count_matches(
         y_true, y_pred, matches, iou_threshold=iou_threshold)
@@ -160,7 +198,8 @@ def recall(y_true, y_pred, matches=None, iou_threshold=0.5):
     return n_pred_correct / n_true
 
 
-def mad_radius(y_true, y_pred, matches=None, iou_threshold=0.5):
+def mad_radius(y_true, y_pred, matches=None, iou_threshold=0.5,
+               minipatch=None):
     """
     Relative Mean absolute deviation (MAD) of the radius.
 
@@ -176,7 +215,8 @@ def mad_radius(y_true, y_pred, matches=None, iou_threshold=0.5):
     mad_radius : float > 0
     """
     if matches is None:
-        matches = [_match_tuples(t, p) for t, p in zip(y_true, y_pred)]
+        matches = [_match_tuples(t, p, minipatch=minipatch)
+                   for t, p in zip(y_true, y_pred)]
 
     loc_true, loc_pred = _locate_matches(
         y_true, y_pred, matches, iou_threshold=iou_threshold)
@@ -184,7 +224,8 @@ def mad_radius(y_true, y_pred, matches=None, iou_threshold=0.5):
     return np.abs((loc_pred[:, 2] - loc_true[:, 2]) / loc_true[:, 2]).mean()
 
 
-def mad_center(y_true, y_pred, matches=None, iou_threshold=0.5):
+def mad_center(y_true, y_pred, matches=None, iou_threshold=0.5,
+               minipatch=None):
     """
     Relative Mean absolute deviation (MAD) of the center (relative to the
     radius of the true object).
@@ -201,13 +242,14 @@ def mad_center(y_true, y_pred, matches=None, iou_threshold=0.5):
     mad_center : float > 0
     """
     if matches is None:
-        matches = [_match_tuples(t, p) for t, p in zip(y_true, y_pred)]
+        matches = [_match_tuples(t, p, minipatch=minipatch)
+                   for t, p in zip(y_true, y_pred)]
 
     loc_true, loc_pred = _locate_matches(
         y_true, y_pred, matches, iou_threshold=iou_threshold)
 
     d = np.sqrt((loc_pred[:, 0] - loc_true[:, 0]) ** 2 + (
-    loc_pred[:, 1] - loc_true[:, 1]) ** 2)
+        loc_pred[:, 1] - loc_true[:, 1]) ** 2)
 
     return np.abs(d / loc_true[:, 2]).mean()
 
@@ -215,77 +257,65 @@ def mad_center(y_true, y_pred, matches=None, iou_threshold=0.5):
 # ScoreType classes
 
 
-class Precision(BaseScoreType):
+class Precision(DetectionBaseScoreType):
     is_lower_the_better = False
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='precision', precision=2, conf_threshold=0.5):
+    def __init__(self, name='precision', precision=2, conf_threshold=0.5,
+                 minipatch=None):
         self.name = name
         self.precision = precision
         self.conf_threshold = conf_threshold
+        self.minipatch = minipatch
 
-    def __call__(self, y_true, y_pred, conf_threshold=None):
-        if conf_threshold is None:
-            conf_threshold = self.conf_threshold
-        y_pred_temp = [
-            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
-            for y_pred_patch in y_pred]
-        return precision(y_true, y_pred_temp)
+    def detection_score(self, y_true, y_pred):
+        return precision(y_true, y_pred, minipatch=self.minipatch)
 
 
-class Recall(BaseScoreType):
+class Recall(DetectionBaseScoreType):
     is_lower_the_better = False
     minimum = 0.0
     maximum = 1.0
 
-    def __init__(self, name='recall', precision=2, conf_threshold=0.5):
+    def __init__(self, name='recall', precision=2, conf_threshold=0.5,
+                 minipatch=None):
         self.name = name
         self.precision = precision
         self.conf_threshold = conf_threshold
+        self.minipatch = minipatch
 
-    def __call__(self, y_true, y_pred, conf_threshold=None):
-        if conf_threshold is None:
-            conf_threshold = self.conf_threshold
-        y_pred_temp = [
-            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
-            for y_pred_patch in y_pred]
-        return recall(y_true, y_pred_temp)
+    def detection_score(self, y_true, y_pred):
+        return recall(y_true, y_pred, minipatch=self.minipatch)
 
 
-class MAD_Center(BaseScoreType):
+class MAD_Center(DetectionBaseScoreType):
     is_lower_the_better = True
     minimum = 0.0
     maximum = np.inf
 
-    def __init__(self, name='mad_center', precision=2, conf_threshold=0.5):
+    def __init__(self, name='mad_center', precision=2, conf_threshold=0.5,
+                 minipatch=None):
         self.name = name
         self.precision = precision
         self.conf_threshold = conf_threshold
+        self.minipatch = minipatch
 
-    def __call__(self, y_true, y_pred, conf_threshold=None):
-        if conf_threshold is None:
-            conf_threshold = self.conf_threshold
-        y_pred_temp = [
-            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
-            for y_pred_patch in y_pred]
-        return mad_center(y_true, y_pred_temp)
+    def detection_score(self, y_true, y_pred):
+        return mad_center(y_true, y_pred, minipatch=self.minipatch)
 
 
-class MAD_Radius(BaseScoreType):
+class MAD_Radius(DetectionBaseScoreType):
     is_lower_the_better = True
     minimum = 0.0
     maximum = np.inf
 
-    def __init__(self, name='mad_radius', precision=2, conf_threshold=0.5):
+    def __init__(self, name='mad_radius', precision=2, conf_threshold=0.5,
+                 minipatch=None):
         self.name = name
         self.precision = precision
         self.conf_threshold = conf_threshold
+        self.minipatch = minipatch
 
-    def __call__(self, y_true, y_pred, conf_threshold=None):
-        if conf_threshold is None:
-            conf_threshold = self.conf_threshold
-        y_pred_temp = [
-            [(x, y, r) for (x, y, r, p) in y_pred_patch if p > conf_threshold]
-            for y_pred_patch in y_pred]
-        return mad_radius(y_true, y_pred_temp)
+    def detection_score(self, y_true, y_pred):
+        return mad_radius(y_true, y_pred, minipatch=self.minipatch)

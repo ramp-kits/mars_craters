@@ -17,7 +17,8 @@ Predictions = local_workflow.predictions.Predictions
 workflow = local_workflow.workflow.ObjectDetector()
 
 score_types = [
-    local_workflow.scores.SCP(precision=4),
+    local_workflow.scores.SCP(
+        shape=(224, 224), precision=4, minipatch=[56, 168, 56, 168]),
     local_workflow.scores.OSPA(precision=4),
     local_workflow.scores.AveragePrecision(precision=4),
     local_workflow.scores.Precision(precision=4),
