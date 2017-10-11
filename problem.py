@@ -3,27 +3,24 @@ import os
 
 import numpy as np
 import pandas as pd
-# import rampwf as rw
 
-
-local_workflow = imp.load_package('workflow', './workflow')
+import rampwf as rw
 
 
 problem_title = 'Mars craters detection and classification'
-
 # A type (class) which will be used to create wrapper objects for y_pred
-Predictions = local_workflow.predictions.Predictions
-
+Predictions = rw.prediction_types.make_detection()
 # An object implementing the workflow
-workflow = local_workflow.workflow.ObjectDetector()
+workflow = rw.workflows.ObjectDetector()
 
 score_types = [
-    local_workflow.scores.SCP(
+    rw.score_types.SCP(
         shape=(224, 224), precision=4, minipatch=[56, 168, 56, 168]),
-    local_workflow.scores.OSPA(precision=4),
-    local_workflow.scores.AveragePrecision(precision=4),
-    local_workflow.scores.Precision(precision=4),
-    local_workflow.scores.Recall(precision=4),
+    # rw.score_types.OSPA(precision=4, minipatch=[56, 168, 56, 168]),
+    rw.score_types.OSPA(precision=4),
+    rw.score_types.AverageDetectionPrecision(name='ap', precision=4),
+    rw.score_types.DetectionPrecision(name='prec', precision=4),
+    rw.score_types.DetectionRecall(name='rec', precision=4),
 ]
 
 
