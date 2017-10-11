@@ -59,6 +59,8 @@ def _read_data(path, typ):
     labels_array = labels[['row_p', 'col_p', 'radius_p']].values
     y = [[tuple(x) for x in labels_array[i:j]] for i, j in
          zip(n_cum[:-1], n_cum[1:])]
+    y_array = np.empty(len(y), dtype=object)
+    y_array[:] = y
 
     # return src, y
     return src, y
