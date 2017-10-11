@@ -81,8 +81,13 @@ def _read_data(path, typ):
     y_array = np.empty(len(y), dtype=object)
     y_array[:] = y
 
-    # return src, y
-    return src, y_array
+    test = os.getenv('RAMP_TEST_MODE', 0)
+
+    if test:
+        # return src, y
+        return src[:30], y_array[:30]
+    else:
+        return src, y_array
 
 
 def get_test_data(path='.'):
