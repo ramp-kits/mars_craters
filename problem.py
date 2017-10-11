@@ -33,9 +33,9 @@ def get_cv(X, y):
     n1 = n_tot // 3
     n2 = n1 * 2
 
-    return [(slice(0, n2), slice(n2, None)),
-            (slice(n1, None), slice(None, n1)),
-            (np.r_[0:n1, n2:n_tot], slice(n1, n2))]
+    return [(np.r_[0:n2], np.r_[n2:n_tot]),
+            (np.r_[n1:n_tot], np.r_[0:n1]),
+            (np.r_[0:n1, n2:n_tot], np.r_[n1:n2])]
 
 
 def _read_data(path, typ):
