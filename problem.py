@@ -55,12 +55,16 @@ def _read_data(path, typ):
     X, y data
 
     """
+    try:
+        data_path = os.path.join(path, 'data', 'data_{}.npy'.format(typ))
+        src = np.load(data_path, mmap_mode='r')
 
-    data_path = os.path.join(path, 'data', 'data_{}.npy'.format(typ))
-    src = np.load(data_path, mmap_mode='r')
-
-    labels_path = os.path.join(path, 'data', 'labels_{}.csv'.format(typ))
-    labels = pd.read_csv(labels_path)
+        labels_path = os.path.join(path, 'data', 'labels_{}.csv'.format(typ))
+        labels = pd.read_csv(labels_path)
+    except IOError:
+        raise IOError("'data/data_{}.npy' and 'data/labels_{}.csv' are not "
+                      "found. Ensure you ran 'python download_data.py' to "
+                      "obtain the train/test data".format(typ))
 
     # convert the dataframe with crater positions to list of
     # list of (x, y, radius) tuples (list of arrays of shape (n, 3) with n
