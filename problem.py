@@ -1,4 +1,3 @@
-import imp
 import os
 
 import numpy as np
@@ -18,9 +17,21 @@ score_types = [
         shape=(224, 224), precision=4, minipatch=[56, 168, 56, 168]),
     # rw.score_types.OSPA(precision=4, minipatch=[56, 168, 56, 168]),
     rw.score_types.OSPA(precision=4),
-    rw.score_types.AverageDetectionPrecision(name='ap', precision=4),
-    rw.score_types.DetectionPrecision(name='prec', precision=4),
-    rw.score_types.DetectionRecall(name='rec', precision=4),
+    rw.score_types.AverageDetectionPrecision(name='map', precision=4),
+    rw.score_types.DetectionPrecision(
+        name='prec(0)', precision=4, iou_threshold=0),
+    rw.score_types.DetectionPrecision(
+        name='prec(0.5)', precision=4, iou_threshold=0.5),
+    rw.score_types.DetectionPrecision(
+        name='prec(0.9)', precision=4, iou_threshold=0.9),
+    rw.score_types.DetectionRecall(
+        name='rec(0)', precision=4, iou_threshold=0),
+    rw.score_types.DetectionRecall(
+        name='rec(0.5)', precision=4, iou_threshold=0.5),
+    rw.score_types.DetectionRecall(
+        name='rec(0.9)', precision=4, iou_threshold=0.9),
+    rw.score_types.MADCenter(name='madc', precision=4),
+    rw.score_types.MADRadius(name='madr', precision=4),
 ]
 
 
@@ -40,7 +51,7 @@ def get_cv(X, y):
 
 def _read_data(path, typ):
     """
-    Read and process data and labels
+    Read and process data and labels.
 
     Parameters
     ----------
