@@ -18,7 +18,7 @@ install:
 script:
     - flake8 --ignore F812 *.py workflow/*.py submissions/*/*.py
     - pytest --cov workflow
-    - ramp_test_submission --quick-test
-    - ramp_test_submission --submission image_processing --quick-test
+    #- ramp_test_submission --quick-test
+    #- ramp_test_submission --submission image_processing --quick-test
 notifications:
   email: true
