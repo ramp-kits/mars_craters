@@ -32,11 +32,17 @@ def get_cv(X, y):
     # cv = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=57)
     # return cv.split(X, y)
 
-    # quadrangles for training have shape:  4082, 3397, 2698 (total 10177)
+    # 3 quadrangles for training have not exactly the same size,
+    # but for simplicity just cut in 3
     # for each fold use one quadrangle as test set, the other two as training
-    return [(slice(0, 4082 + 3397), slice(4082 + 3397, None)),
-            (slice(4082, None), slice(None, 4082)),
-            (np.r_[0:4082, 4082+3397:10177], slice(4082, 4082 + 3397))]
+
+    n_tot = len(X)
+    n1 = n_tot // 3
+    n2 = n1 * 2
+
+    return [(slice(0, n2), slice(n2, None)),
+            (slice(n1, None), slice(None, n1)),
+            (np.r_[0:n1, n2:n_tot], slice(n1, n2))]
 
 
 def _read_data(path, typ):
@@ -63,7 +69,7 @@ def _read_data(path, typ):
     y_array[:] = y
 
     # return src, y
-    return src, y
+    return src, y_array
 
 
 def get_test_data(path='.'):
