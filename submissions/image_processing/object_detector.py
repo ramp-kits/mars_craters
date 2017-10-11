@@ -219,10 +219,10 @@ class ObjectDetector(object):
         output = [[] for _ in range(len(X))]
         crater_idx = np.flatnonzero(self.estimator_.classes_ == 1)[0]
         for crater, pred, img_idx in zip(location, y_pred, idx_cand_to_img):
-            output[img_idx].append((crater[0], crater[1], crater[2],
-                                    pred[crater_idx]))
+            output[img_idx].append((pred[crater_idx],
+                                    crater[0], crater[1], crater[2]))
 
-        return output
+        return np.array(output, dtype=object)
 
 ###############################################################################
 # IOU function
