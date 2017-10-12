@@ -50,7 +50,7 @@ class ObjectDetector(object):
         
         ### TEMP - for showcase load weights (this is not possible
         # for an actual submission)
-        self.model_.load_weights('submissions/ssd7/ssd7_0_weights.h5')
+        self.model_.load_weights('submissions/keras_ssd7/ssd7_0_weights.h5')
         return
         ###
         
