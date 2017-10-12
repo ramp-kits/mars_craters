@@ -70,7 +70,7 @@ def _read_data(path, typ):
         labels_path = os.path.join(path, 'data', 'labels_{}.csv'.format(typ))
         labels = pd.read_csv(labels_path)
     except IOError:
-        raise IOError("'data/data_{}.npy' and 'data/labels_{}.csv' are not "
+        raise IOError("'data/data_{0}.npy' and 'data/labels_{0}.csv' are not "
                       "found. Ensure you ran 'python download_data.py' to "
                       "obtain the train/test data".format(typ))
 
