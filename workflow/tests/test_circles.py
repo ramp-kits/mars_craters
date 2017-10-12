@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ..scores._circles import project_circle, circle_map
+from ..scores._circles import project_circle, circle_maps
 
 circle = (1, 1, 1)
 x = [circle]
@@ -35,8 +35,18 @@ def test_project_circle():
 
 
 def test_circle_map():
-    assert circle_map([], []).max() == 0
-    assert circle_map([], []).sum() == 0
-    assert circle_map(x, []).sum() == 1
-    assert circle_map([], x).sum() == -1
-    assert circle_map(x, x).sum() == 0
+    shape = (10, 10)
+    map_true, map_pred = circle_maps([], [], shape)
+    assert map_true.max() == 0
+    assert map_pred.max() == 0
+    assert map_true.sum() == 0
+    assert map_pred.sum() == 0
+    map_true, map_pred = circle_maps(x, [], shape)
+    assert map_true.sum() == 1
+    assert map_pred.sum() == 0
+    map_true, map_pred = circle_maps([], x, shape)
+    assert map_true.sum() == 0
+    assert map_pred.sum() == 1
+    map_true, map_pred = circle_maps(x, x, shape)
+    assert map_true.sum() == 1
+    assert map_pred.sum() == 1
