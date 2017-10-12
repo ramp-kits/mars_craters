@@ -19,7 +19,7 @@ using the names `<id>.png`, where `<id>`s are coming from `data/train.csv` and `
 Install ramp-workflow (rampwf), then execute
 
 ```
-ramp_test_submission
+ramp_test_submission --quick-test
 ```
 
 Get started on this RAMP with the [dedicated notebook](mars_craters_starting_kit.ipynb).
