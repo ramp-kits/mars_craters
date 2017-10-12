@@ -1,0 +1,16 @@
+name: mars-craters
+channels:
+  - conda-forge
+dependencies:
+  - scipy
+  - numpy
+  - pandas
+  - jupyter
+  - matplotlib
+  - scikit-learn
+  - scikit-image
+  - h5py
+  - keras>=2.0.*
+  - mahotas
+  - pip:
+    - git+https://github.com/paris-saclay-cds/ramp-workflow
