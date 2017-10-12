@@ -47,13 +47,13 @@ class ObjectDetector(object):
         self.model_check_point = model_check_point
 
     def fit(self, X, y):
-        
-        ### TEMP - for showcase load weights (this is not possible
+
+        # TEMP - for showcase load weights (this is not possible
         # for an actual submission)
         self.model_.load_weights('submissions/keras_ssd7/ssd7_0_weights.h5')
         return
-        ###
-        
+        #
+
         # build the box encoder to later encode y to make usable in the model
         ssd_box_encoder = SSDBoxEncoder(
             img_height=self.params_model_.img_height,
@@ -138,8 +138,11 @@ class ObjectDetector(object):
         y_pred = self.model_.predict(np.expand_dims(X, -1))
         # only the 15 best candidate will be kept
         y_pred_decoded = decode_y(y_pred, top_k=15, input_coords='centroids')
-        return np.array([self._anchor_to_circle(x, pred=True)
-                         for x in y_pred_decoded])
+        y_pred_array = np.array([self._anchor_to_circle(x, pred=True)
+                                 for x in y_pred_decoded])
+        # calibrate the prediction; they are shifted 0.2
+        y_pred_array[:, :, 0] -= 0.2
+        return y_pred_array
 
     ###########################################################################
     # Setup SSD model
