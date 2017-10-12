@@ -1,5 +1,6 @@
 scipy
 numpy
+jupyter
 pandas
 mahotas
 scikit-image
@@ -7,3 +8,4 @@ scikit-learn
 keras>=2.0.0
 tensorflow
 matplotlib
+git+https://github.com/paris-saclay-cds/ramp-workflow
