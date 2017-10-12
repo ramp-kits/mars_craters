@@ -1,0 +1,9 @@
+scipy
+numpy
+pandas
+mahotas
+scikit-image
+scikit-learn
+keras>=2.0.0
+tensorflow
+matplotlib
