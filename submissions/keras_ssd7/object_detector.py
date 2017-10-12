@@ -141,7 +141,7 @@ class ObjectDetector(object):
         y_pred_array = np.array([self._anchor_to_circle(x, pred=True)
                                  for x in y_pred_decoded])
         # calibrate the prediction; they are shifted 0.2
-        y_pred_array[:, :, 0] -= 0.2
+        y_pred_array[:, :, 0] += 0.2
         return y_pred_array
 
     ###########################################################################
