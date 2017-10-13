@@ -8,37 +8,34 @@ from .detection_base import DetectionBaseScoreType
 from ..iou import cc_iou as iou
 
 
-def _select_minipatch_tuples(minipatch, y_true, y_pred):
+def _select_minipatch_tuples(y_list, minipatch):
     """
 
     Parameters
     ----------
+    y_list : list of tuples
+        Full list of labels and predictions
     minipatch : list of int
         Bounds of the internal scoring patch
-    y_true, y_pred : list of tuples
-        Full list of labels and predictions
 
     Returns
     -------
-    y_true, y_pred : list of tuples
-        List of labels and predictions restricted to
-        the central minipatch
+    y_list_cut : list of bool
+        List of booleans corresponding to whether the circle is in
+        the minipatch or not
 
     """
     row_min, row_max, col_min, col_max = minipatch
 
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
+    y_list = np.asarray(y_list)
 
-    y_true_cut = ((y_true[0] >= col_min) & (y_true[0] < col_max) &
-                  (y_true[1] >= row_min) & (y_true[1] < row_max))
-    y_pred_cut = ((y_pred[0] >= col_min) & (y_pred[0] < col_max) &
-                  (y_pred[1] >= row_min) & (y_pred[1] < row_max))
+    y_list_cut = ((y_list[0] >= col_min) & (y_list[0] < col_max) &
+                  (y_list[1] >= row_min) & (y_list[1] < row_max))
 
-    return y_true[y_true_cut].tolist(), y_pred[y_pred_cut].tolist()
+    return y_list_cut
 
 
-def _match_tuples(y_true, y_pred, minipatch=None):
+def _match_tuples(y_true, y_pred):
     """
     Given set of true and predicted (x, y, r) tuples, determine the best
     possible match.
@@ -60,9 +57,6 @@ def _match_tuples(y_true, y_pred, minipatch=None):
 
     n_true = len(y_true)
     n_pred = len(y_pred)
-
-    if minipatch is not None:
-        y_true, y_pred = _select_minipatch_tuples(minipatch, y_true, y_pred)
 
     iou_matrix = np.empty((n_true, n_pred))
 
@@ -163,7 +157,7 @@ def precision(y_true, y_pred, matches=None, iou_threshold=0.5,
     precision_score : float [0 - 1]
     """
     if matches is None:
-        matches = [_match_tuples(t, p, minipatch=minipatch)
+        matches = [_match_tuples(t, p)
                    for t, p in zip(y_true, y_pred)]
 
     n_true, n_pred_all, n_pred_correct = _count_matches(
@@ -189,7 +183,7 @@ def recall(y_true, y_pred, matches=None, iou_threshold=0.5,
     recall_score : float [0 - 1]
     """
     if matches is None:
-        matches = [_match_tuples(t, p, minipatch=minipatch)
+        matches = [_match_tuples(t, p)
                    for t, p in zip(y_true, y_pred)]
 
     n_true, n_pred_all, n_pred_correct = _count_matches(
@@ -215,7 +209,7 @@ def mad_radius(y_true, y_pred, matches=None, iou_threshold=0.5,
     mad_radius : float > 0
     """
     if matches is None:
-        matches = [_match_tuples(t, p, minipatch=minipatch)
+        matches = [_match_tuples(t, p)
                    for t, p in zip(y_true, y_pred)]
 
     loc_true, loc_pred = _locate_matches(
@@ -242,7 +236,7 @@ def mad_center(y_true, y_pred, matches=None, iou_threshold=0.5,
     mad_center : float > 0
     """
     if matches is None:
-        matches = [_match_tuples(t, p, minipatch=minipatch)
+        matches = [_match_tuples(t, p)
                    for t, p in zip(y_true, y_pred)]
 
     loc_true, loc_pred = _locate_matches(
