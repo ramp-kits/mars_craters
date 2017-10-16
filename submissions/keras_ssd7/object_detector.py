@@ -294,7 +294,7 @@ class BatchGeneratorBuilder(object):
                            for img in X[i:i + batch_size]]
                 y_batch = y[i:i + batch_size]
 
-                y_batch = [np.array([(1, cx - r, cy - r, cx + r, cy + r)
+                y_batch = [np.array([(1, cx - r, cx + r, cy - r, cy + r)
                                      for (cy, cx, r) in y_patch])
                            for y_patch in y_batch]
 
