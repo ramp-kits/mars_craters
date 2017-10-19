@@ -12,26 +12,26 @@ Predictions = rw.prediction_types.make_detection()
 # An object implementing the workflow
 workflow = rw.workflows.ObjectDetector()
 
+minipatch = [56, 168, 56, 168]
+
 score_types = [
-    rw.score_types.SCP(
-        shape=(224, 224), precision=4, minipatch=[56, 168, 56, 168]),
-    # rw.score_types.OSPA(precision=4, minipatch=[56, 168, 56, 168]),
-    rw.score_types.OSPA(precision=4),
-    rw.score_types.AverageDetectionPrecision(name='map', precision=4),
+    rw.score_types.SCP(shape=(224, 224), minipatch=minipatch),
+    rw.score_types.OSPA(minipatch=minipatch),
+    rw.score_types.AverageDetectionPrecision(name='ap'),
     rw.score_types.DetectionPrecision(
-        name='prec(0)', precision=4, iou_threshold=0),
+        name='prec(0)', iou_threshold=0.0, minipatch=minipatch),
     rw.score_types.DetectionPrecision(
-        name='prec(0.5)', precision=4, iou_threshold=0.5),
+        name='prec(0.5)', iou_threshold=0.5, minipatch=minipatch),
     rw.score_types.DetectionPrecision(
-        name='prec(0.9)', precision=4, iou_threshold=0.9),
+        name='prec(0.9)', iou_threshold=0.9, minipatch=minipatch),
     rw.score_types.DetectionRecall(
-        name='rec(0)', precision=4, iou_threshold=0),
+        name='rec(0)', iou_threshold=0.0, minipatch=minipatch),
     rw.score_types.DetectionRecall(
-        name='rec(0.5)', precision=4, iou_threshold=0.5),
+        name='rec(0.5)', iou_threshold=0.5, minipatch=minipatch),
     rw.score_types.DetectionRecall(
-        name='rec(0.9)', precision=4, iou_threshold=0.9),
-    rw.score_types.MADCenter(name='madc', precision=4),
-    rw.score_types.MADRadius(name='madr', precision=4),
+        name='rec(0.9)', iou_threshold=0.9, minipatch=minipatch),
+    rw.score_types.MADCenter(name='madc', minipatch=minipatch),
+    rw.score_types.MADRadius(name='madr', minipatch=minipatch)
 ]
 
 
