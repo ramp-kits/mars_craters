@@ -12,6 +12,10 @@ Predictions = rw.prediction_types.make_detection()
 # An object implementing the workflow
 workflow = rw.workflows.ObjectDetector()
 
+# The overlap between adjacent patches is 56 pixels
+# The scoring region is chosen so that despite the overlap,
+# no crater is scored twice, hence the boundaries of
+# 28 = 56 / 2 and 196 = 224 - 56 / 2
 minipatch = [28, 196, 28, 196]
 
 score_types = [
