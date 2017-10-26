@@ -67,11 +67,20 @@ def _read_data(path, typ):
     X, y data
 
     """
+    test = os.getenv('RAMP_TEST_MODE', 0)
+
+    if test:
+        suffix = '_mini'
+    else:
+        suffix = ''
+
     try:
-        data_path = os.path.join(path, 'data', 'data_{}.npy'.format(typ))
+        data_path = os.path.join(path, 'data',
+                                 'data_{0}{1}.npy'.format(typ, suffix))
         src = np.load(data_path, mmap_mode='r')
 
-        labels_path = os.path.join(path, 'data', 'labels_{}.csv'.format(typ))
+        labels_path = os.path.join(path, 'data',
+                                   'labels_{0}{1}.csv'.format(typ, suffix))
         labels = pd.read_csv(labels_path)
     except IOError:
         raise IOError("'data/data_{0}.npy' and 'data/labels_{0}.csv' are not "
@@ -95,8 +104,6 @@ def _read_data(path, typ):
     # convert list to object array of lists
     y_array = np.empty(len(y), dtype=object)
     y_array[:] = y
-
-    test = os.getenv('RAMP_TEST_MODE', 0)
 
     if test:
         # return src, y
