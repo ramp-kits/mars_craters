@@ -39,7 +39,7 @@ class ObjectDetector(object):
 
     """
 
-    def __init__(self, batch_size=32, epoch=50, model_check_point=True):
+    def __init__(self, batch_size=10, epoch=50, model_check_point=True):
         self.model_, self.params_model_, self.predictor_sizes = \
             self._build_model()
         self.batch_size = batch_size
@@ -50,8 +50,8 @@ class ObjectDetector(object):
 
         # TEMP - for showcase load weights (this is not possible
         # for an actual submission)
-        self.model_.load_weights('submissions/keras_ssd7/ssd7_0_weights.h5')
-        return
+        #self.model_.load_weights('submissions/keras_ssd7/ssd7_0_weights.h5')
+        #return
         #
 
         # build the box encoder to later encode y to make usable in the model
@@ -77,19 +77,18 @@ class ObjectDetector(object):
         callbacks = []
         if self.model_check_point:
             callbacks.append(
-                ModelCheckpoint('./ssd7_0_weights_epoch{epoch:02d}_'
-                                'loss{loss:.4f}.h5',
+                ModelCheckpoint('./ssd7_weights_best.h5',
                                 monitor='val_loss', verbose=1,
                                 save_best_only=True, save_weights_only=True,
                                 mode='auto', period=1))
         # add early stopping
         callbacks.append(EarlyStopping(monitor='val_loss', min_delta=0.001,
-                                       patience=5))
+                                       patience=10, verbose=1))
 
         # reduce learning-rate when reaching plateau
         callbacks.append(ReduceLROnPlateau(monitor='val_loss', factor=0.5,
-                                           patience=0, epsilon=0.001,
-                                           cooldown=0))
+                                           patience=5, epsilon=0.001,
+                                           cooldown=2, verbose=1))
 
         # fit the model
         self.model_.fit_generator(
@@ -294,6 +293,22 @@ class BatchGeneratorBuilder(object):
                            for img in X[i:i + batch_size]]
                 y_batch = y[i:i + batch_size]
 
+                for j in range(batch_size):
+
+                    # flip images
+                    if np.random.randint(2):
+                        X_batch[j] = np.flip(X_batch[j], axis=0)
+                        y_batch[j] = [(224 - row, col, radius)
+                                      for (row, col, radius) in y_batch[j]]
+                    if np.random.randint(2):
+                        X_batch[j] = np.flip(X_batch[j], axis=1)
+                        y_batch[j] = [(row, 224 - col, radius)
+                                      for (row, col, radius) in y_batch[j]]
+
+                    # TODO add different data augmentation steps
+
+                # convert to (class label, xmin, xmax, ymin, ymax) format
+                # + convert to array
                 y_batch = [np.array([(1, cx - r, cx + r, cy - r, cy + r)
                                      for (cy, cx, r) in y_patch])
                            for y_patch in y_batch]
