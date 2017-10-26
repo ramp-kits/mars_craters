@@ -34,4 +34,9 @@ def main(output_dir='data'):
 
 
 if __name__ == '__main__':
-    main()
+    test = os.getenv('RAMP_TEST_MODE', 0)
+
+    if test:
+        print("Testing mode, not downloading any data.")
+    else:
+        main()
