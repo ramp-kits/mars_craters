@@ -142,7 +142,6 @@ class ObjectDetector(object):
         # calibrate the prediction; they are shifted 0.2
         for craters in y_pred:
             for crater in craters:
-                print crater
                 crater = (crater[0] + 0.2, crater[1], crater[2], crater[3])
         # convert output into an np.array of objects
         y_pred_array = np.empty(len(y_pred), dtype=object)
