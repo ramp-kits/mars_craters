@@ -13,5 +13,4 @@ class ObjectDetector:
         # convert output into an np.array of objects
         y_pred_array = np.empty(len(y_pred), dtype=object)
         y_pred_array[:] = y_pred
-        print y_pred_array.shape
         return y_pred_array
