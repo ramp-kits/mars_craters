@@ -138,10 +138,15 @@ class ObjectDetector(object):
         y_pred = self.model_.predict(np.expand_dims(X, -1))
         # only the 15 best candidate will be kept
         y_pred_decoded = decode_y(y_pred, top_k=15, input_coords='centroids')
-        y_pred_array = np.array([self._anchor_to_circle(x, pred=True)
-                                 for x in y_pred_decoded])
+        y_pred = [self._anchor_to_circle(x, pred=True) for x in y_pred_decoded]
         # calibrate the prediction; they are shifted 0.2
-        y_pred_array[:, :, 0] += 0.2
+        for craters in y_pred:
+            for crater in craters:
+                print crater
+                crater = (crater[0] + 0.2, crater[1], crater[2], crater[3])
+        # convert output into an np.array of objects
+        y_pred_array = np.empty(len(y_pred), dtype=object)
+        y_pred_array[:] = y_pred
         return y_pred_array
 
     ###########################################################################

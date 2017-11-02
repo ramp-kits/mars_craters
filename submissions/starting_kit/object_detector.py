@@ -10,6 +10,8 @@ class ObjectDetector:
 
     def predict(self, X):
         y_pred = [[(1.0, 112.0, 112.0, 112.0)] for img in X]
+        # convert output into an np.array of objects
         y_pred_array = np.empty(len(y_pred), dtype=object)
         y_pred_array[:] = y_pred
+        print y_pred_array.shape
         return y_pred_array
