@@ -1,25 +1,28 @@
 # RAMP starting kit on Mars craters detection and classification
 
-Authors: Frédéric Schmidt, Anthony Lagain, Joris van den Bossche & Alexandre Boucaud
-
 [![Build Status](https://travis-ci.org/ramp-kits/mars_craters.svg?branch=master)](https://travis-ci.org/ramp-kits/mars_craters)
 
-Go to [`ramp-worflow`](https://github.com/paris-saclay-cds/ramp-workflow) for more help on the [RAMP](http:www.ramp.studio) ecosystem.
+> Authors: Joris van den Bossche, Alexandre Boucaud, Frédéric Schmidt & Anthony Lagain, 
 
-After cloning, run
+#### Set up
 
-```
-python download_data.py
-```
+Open a terminal and
 
-the first time. It will create `data/imgs` and download the images there
-using the names `<id>.png`, where `<id>`s are coming from `data/train.csv` and `data/test.csv`.
+1. install the `ramp-workflow` library (if not already done)
+  ```
+  $ pip install git+https://github.com/paris-saclay-cds/ramp-workflow.git
+  ```
+  
+2. Follow the ramp-kits instructions from the [wiki](https://github.com/paris-saclay-cds/ramp-workflow/wiki/Getting-started-with-a-ramp-kit)
+
+#### Notebook
+
+Finally get started on this RAMP with the [dedicated notebook](mars_craters_starting_kit.ipynb).
 
 
-Install ramp-workflow (rampwf), then execute
+#### Help
+Go to the `ramp-worflow` [wiki](https://github.com/paris-saclay-cds/ramp-workflow/wiki) for more help on the [RAMP](http:www.ramp.studio) ecosystem.
 
-```
-ramp_test_submission --quick-test
-```
 
-Get started on this RAMP with the [dedicated notebook](mars_craters_starting_kit.ipynb).
+
+
