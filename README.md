@@ -21,7 +21,7 @@ Finally get started on this RAMP with the [dedicated notebook](mars_craters_star
 
 
 #### Help
-Go to the `ramp-worflow` [wiki](https://github.com/paris-saclay-cds/ramp-workflow/wiki) for more help on the [RAMP](http:www.ramp.studio) ecosystem.
+Go to the `ramp-workflow` [wiki](https://github.com/paris-saclay-cds/ramp-workflow/wiki) for more help on the [RAMP](http:www.ramp.studio) ecosystem.
 
 
 
