@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/ramp-kits/mars_craters.svg?branch=master)](https://travis-ci.org/ramp-kits/mars_craters)
 
-> Authors: Joris van den Bossche, Alexandre Boucaud, Frédéric Schmidt & Anthony Lagain, 
+_Authors: Joris van den Bossche, Alexandre Boucaud, Frédéric Schmidt & Anthony Lagain_
+
+Impact craters in planetary science are used to date and characterize planetary surfaces and study the geological history of planets. It is therefore an important task which traditionally has been achieved by means of visual inspection of images. The enormous number of craters, however, makes visual counting impractical. The challenge in this RAMP is to design an algorithm to automatically detect crater position and size based on satellite images.
 
 #### Set up
 
