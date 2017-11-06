@@ -8,4 +8,4 @@ scikit-learn>=0.19
 keras>=2.0.0
 tensorflow
 matplotlib
-git+https://github.com/paris-saclay-cds/ramp-workflow
+git+https://github.com/paris-saclay-cds/ssd_keras
