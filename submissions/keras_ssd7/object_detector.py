@@ -137,10 +137,18 @@ class ObjectDetector(object):
         y_pred = self.model_.predict(np.expand_dims(X, -1))
         # only the 15 best candidate will be kept
         y_pred_decoded = decode_y(y_pred, top_k=15, input_coords='centroids')
-        y_pred_array = np.array([self._anchor_to_circle(x, pred=True)
-                                 for x in y_pred_decoded])
-        # calibrate the prediction; they are shifted 0.2
-        y_pred_array[:, :, 0] += 0.2
+
+        y_pred = []
+        for y_pred_patch in y_pred_decoded:
+            # convert [xmin, xmax, ymin, ymax] to [x, y, radius]
+            res = self._anchor_to_circle(y_pred_patch, pred=True)
+            # calibrate the prediction; they are shifted 0.2
+            res = [(x[0] + 0.2, x[1], x[2], x[3]) for x in res]
+            y_pred.append(res)
+
+        # convert output into an np.array of objects
+        y_pred_array = np.empty(len(y_pred), dtype=object)
+        y_pred_array[:] = y_pred
         return y_pred_array
 
     ###########################################################################
