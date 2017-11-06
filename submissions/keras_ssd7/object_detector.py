@@ -137,7 +137,7 @@ class ObjectDetector(object):
         y_pred = self.model_.predict(np.expand_dims(X, -1))
         # only the 15 best candidate will be kept
         y_pred_decoded = decode_y(y_pred, top_k=15, input_coords='centroids')
-        
+
         y_pred = []
         for y_pred_patch in y_pred_decoded:
             # convert [xmin, xmax, ymin, ymax] to [x, y, radius]
