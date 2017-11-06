@@ -46,13 +46,13 @@ class ObjectDetector(object):
         self.epoch = epoch
         self.model_check_point = model_check_point
 
-    def fit(self, X, y):
+    def fit(self, X, y, pretrained=False):
 
-        # TEMP - for showcase load weights (this is not possible
-        # for an actual submission)
-        self.model_.load_weights('submissions/keras_ssd7/ssd7_0_weights.h5')
-        return
-        #
+        if pretrained:
+            # for showcase load weights (this is not possible
+            # for an actual submission)
+            self.model_.load_weights('submissions/keras_ssd7/ssd7_0_weights.h5')
+            return
 
         # build the box encoder to later encode y to make usable in the model
         ssd_box_encoder = SSDBoxEncoder(

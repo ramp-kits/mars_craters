@@ -17,6 +17,7 @@ install:
 script:
     - flake8 --ignore F812 *.py submissions/*/*.py
     - ramp_test_submission --quick-test
-    #- ramp_test_submission --submission image_processing --quick-test
+    - ramp_test_submission --submission image_processing --quick-test
+    - ramp_test_submission --submission keras_ssd7 --quick-test
 notifications:
   email: true
