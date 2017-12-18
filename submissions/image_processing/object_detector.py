@@ -69,10 +69,10 @@ class BlobExtractor(BaseEstimator):
         padded_radius = int(self.padding * radius)
 
         # compute the coordinate of the patch to select
-        x_min = min(x - padded_radius, 0)
-        y_min = min(y - padded_radius, 0)
-        x_max = max(x + padded_radius, X.shape[0] - 1)
-        y_max = max(y + padded_radius, X.shape[1] - 1)
+        x_min = max(x - padded_radius, 0)
+        y_min = max(y - padded_radius, 0)
+        x_max = min(x + padded_radius, X.shape[0] - 1)
+        y_max = min(y + padded_radius, X.shape[1] - 1)
 
         patch = X[y_min:y_max, x_min:x_max]
 
@@ -80,8 +80,9 @@ class BlobExtractor(BaseEstimator):
         zernike = zernike_moments(patch, radius)
 
         # compute SURF descriptor
-        keypoint = np.array([[y, x, 1, 0.1, 1]])
-        surf_descriptor = surf.descriptors(patch, keypoint,
+        scale_surf = radius / self.min_radius
+        keypoint = np.array([[y, x, scale_surf, 0.1, 1]])
+        surf_descriptor = surf.descriptors(X, keypoint,
                                            is_integral=False).ravel()
         if not surf_descriptor.size:
             surf_descriptor = np.zeros((70, ))
