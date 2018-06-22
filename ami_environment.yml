@@ -1,0 +1,23 @@
+name: root
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - scipy
+  - numpy
+  - numba
+  - pandas
+  - jupyter
+  - matplotlib
+  - scikit-learn>=0.19
+  - mahotas
+  - scikit-image
+  - keras>=2.0.0
+  - h5py
+  - tensorflow
+  - pytorch-cpu
+  - torchvision-cpu
+  - pip:
+      - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
+      - git+https://github.com/paris-saclay-cds/ssd_keras
+
