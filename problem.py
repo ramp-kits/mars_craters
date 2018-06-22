@@ -19,9 +19,9 @@ workflow = rw.workflows.ObjectDetector()
 minipatch = [28, 196, 28, 196]
 
 score_types = [
+    rw.score_types.DetectionAveragePrecision(name='ap'),
     rw.score_types.OSPA(minipatch=minipatch),
     rw.score_types.SCP(shape=(224, 224), minipatch=minipatch),
-    rw.score_types.DetectionAveragePrecision(name='ap'),
     rw.score_types.DetectionPrecision(
         name='prec(0)', iou_threshold=0.0, minipatch=minipatch),
     rw.score_types.DetectionPrecision(
