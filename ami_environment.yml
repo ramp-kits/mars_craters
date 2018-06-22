@@ -14,9 +14,9 @@ dependencies:
   - scikit-image
   - keras>=2.0.0
   - h5py
-  - tensorflow
-  - pytorch-cpu
-  - torchvision-cpu
+  - tensorflow-gpu
+  - pytorch
+  - torchvision
   - pip:
       - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
       - git+https://github.com/paris-saclay-cds/ssd_keras
