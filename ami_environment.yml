@@ -19,5 +19,5 @@ dependencies:
   - torchvision
   - pip:
       - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
-      - git+https://github.com/paris-saclay-cds/ssd_keras
+      - https://github.com/paris-saclay-cds/ssd_keras/archive/master.zip
 
