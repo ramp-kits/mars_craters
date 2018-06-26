@@ -15,6 +15,7 @@ dependencies:
   - keras>=2.0.0
   - h5py
   - tensorflow-gpu
+  - cuda90
   - pytorch
   - torchvision
   - pip:
