@@ -91,6 +91,9 @@ def _read_data(path, typ):
     # list of (x, y, radius) tuples (list of arrays of shape (n, 3) with n
     # true craters on an image
 
+    # below code only works correctly if 'i' is sorted
+    assert labels['i'].is_monotonic_increasing
+
     # determine locations of craters for each patch in the labels array
     n_true_patches = labels.groupby('i').size().reindex(
         range(src.shape[0]), fill_value=0).values
