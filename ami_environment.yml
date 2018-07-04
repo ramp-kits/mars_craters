@@ -14,7 +14,7 @@ dependencies:
   - scikit-image
   - keras>=2.0.0
   - h5py
-  - tensorflow-gpu
+  - tensorflow-gpu==1.6
   - cuda90
   - pytorch
   - torchvision
