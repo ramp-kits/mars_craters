@@ -3,21 +3,23 @@ channels:
   - pytorch
   - conda-forge
 dependencies:
-  - scipy
-  - numpy
-  - numba
-  - pandas
-  - jupyter
-  - matplotlib
-  - scikit-learn>=0.19
-  - mahotas
-  - scikit-image
-  - keras>=2.0.0
-  - h5py
-  - tensorflow-gpu==1.6
+  - python=3.6
+  - scipy=1.1.0
+  - numpy=1.14.5
+  - numba=0.39.0
+  - pandas=0.23.3
+  - jupyter=1.0.0
+  - matplotlib=2.2.2
+  - scikit-learn=0.19.2
+  - scikit-image=0.14.0
+  - h5py=2.8.0
+  - keras=2.2.0
+  - tensorflow-gpu=1.8
+  - mahotas=1.4.4
+  - pytorch=0.4.0
   - cuda90
-  - pytorch
-  - torchvision
+  - torchvision=0.2.1
+  - tensorflow-gpu==1.6
   - pip:
       - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
       - https://github.com/paris-saclay-cds/ssd_keras/archive/master.zip

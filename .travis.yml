@@ -11,9 +11,9 @@ before_install:
 install:
     - conda create -n testenv --yes pip python=$PYTHON_VERSION
     - source activate testenv
-    - pip install git+https://github.com/paris-saclay-cds/ramp-workflow.git
     - pip install -r requirements.txt
     - pip install -q flake8
+    - python download_data.py
 script:
     - flake8 --ignore F812 *.py submissions/*/*.py
     - ramp_test_submission --quick-test
