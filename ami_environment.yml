@@ -19,7 +19,6 @@ dependencies:
   - pytorch=0.4.0
   - cuda90
   - torchvision=0.2.1
-  - tensorflow-gpu==1.6
   - pip:
       - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
       - https://github.com/paris-saclay-cds/ssd_keras/archive/master.zip
