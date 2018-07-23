@@ -15,8 +15,18 @@ dependencies:
   - keras=2.2.0
   - tensorflow=1.8
   - mahotas=1.4.4
-  - pytorch-cpu=0.4.0
-  - torchvision-cpu=0.2.1
+  # PyTorch installation 
+  # uncomment the following lines depending on your OS
+  # #Linux
+  #- pytorch-cpu=0.4.0
+  #- torchvision-cpu=0.2.1
+  # #Mac
+  #- pytorch=0.4.0
+  #- torchvision=0.2.1
+  # #Windows
+  #- pytorch-cpu=0.4.0
   - pip:
     - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
     - git+https://github.com/paris-saclay-cds/ssd_keras
+    # #Windows
+    #- torchvision=0.2.1
