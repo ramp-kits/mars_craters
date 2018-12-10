@@ -1,5 +1,6 @@
 name: root
 channels:
+  - defaults
   - pytorch
   - conda-forge
 dependencies:
@@ -9,17 +10,20 @@ dependencies:
   - numba=0.39.0
   - pandas=0.23.3
   - jupyter=1.0.0
-  - matplotlib=2.2.2
-  - scikit-learn=0.19.2
+  - matplotlib
+  - scikit-learn=0.20.1
   - scikit-image=0.14.0
   - h5py=2.8.0
-  - keras=2.2.0
+  - keras=2.2.4
   - tensorflow-gpu=1.8
   - mahotas=1.4.4
   - pytorch=0.4.0
   - cuda90
   - torchvision=0.2.1
+  - opencv
   - pip:
       - https://api.github.com/repos/paris-saclay-cds/ramp-workflow/zipball/master
       - https://github.com/paris-saclay-cds/ssd_keras/archive/master.zip
-
+      - git+https://github.com/matterport/Mask_RCNN
+      - keras-retinanet
+      - imgaug
